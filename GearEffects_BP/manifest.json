@@ -1,0 +1,30 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Gear Effects",
+    "description": "สวมเกราะหรือถือไอเท็มแล้วได้เอฟเฟกต์ตามชนิดและระดับ",
+    "uuid": "5420d6e6-b829-47fc-bfe1-de5787620eb6",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "dcda449c-3b4e-4748-bbdd-494e48721874",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "0f8c5d2a-3168-4766-bf97-8f1e1066d1e9",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ]
+}
