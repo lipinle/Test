@@ -1,0 +1,52 @@
+# Survival Flight — Addon บินได้ในโหมดเอาชีวิตรอด (Minecraft Bedrock / มือถือ)
+
+ถือ **ขนนก (Feather)** แล้วกดใช้ เพื่อเปิด/ปิดการบินในโหมด Survival
+
+## ขั้นตอนการติดตั้งบนมือถือ
+
+1. ดาวน์โหลดไฟล์ `SurvivalFlight.mcaddon` ลงมือถือ
+2. แตะเปิดไฟล์ → เลือกเปิดด้วย Minecraft → เกมจะขึ้นว่า "Import Started… / Successfully imported"
+   - ถ้าแตะแล้วไม่ขึ้น (บาง iPhone): ใช้แอป Files → แชร์ → เลือก Minecraft
+3. สร้างโลกใหม่ หรือแก้ไขโลกเดิม → **Behavior Packs** → **Available** → เลือก *Survival Flight* → **Activate**
+4. (ไม่บังคับ แต่แนะนำ) **Game Settings → Cheats → เปิด Education Edition**
+   เพื่อให้บินได้เหมือนโหมดสร้างสรรค์จริง ๆ
+5. เข้าโลก หาขนนก (ฆ่าไก่) แล้วกดใช้
+
+> ต้องใช้ Minecraft Bedrock เวอร์ชัน 1.21.90 ขึ้นไป ไม่ต้องเปิด Experiments ใด ๆ
+
+## วิธีบิน
+
+| การกระทำ | ผลลัพธ์ |
+|---|---|
+| ถือขนนก แล้วแตะค้าง (PC: คลิกขวา) | เปิด / ปิดการบิน |
+| **เปิด Education Edition ไว้** | แตะปุ่มกระโดด 2 ครั้ง บินเหมือนโหมดสร้างสรรค์ |
+| **ไม่ได้เปิด Education Edition** | กดกระโดดค้าง = บินขึ้น, กดย่อ = บินลง, ไม่กด = ลอยนิ่ง, จอยสติ๊ก = บินไปทางที่มอง, วิ่ง = บินเร็วขึ้น |
+
+- ปิดการบินกลางอากาศจะได้ Slow Falling 5 วินาที ไม่ตกตาย
+- สถานะการบินจะถูกจำไว้ ออกแล้วเข้าเกมใหม่/ตายแล้วเกิดใหม่ก็ยังบินได้
+
+## โครงสร้างไฟล์
+
+```
+SurvivalFlight_BP/
+├── manifest.json      ข้อมูล pack + ประกาศใช้ Script API (@minecraft/server 2.0.0)
+├── pack_icon.png      ไอคอน
+└── scripts/main.js    โค้ดการบินทั้งหมด
+build.sh               แพ็กเป็น SurvivalFlight.mcaddon
+```
+
+## หลักการทำงาน (คิดทีละขั้น)
+
+1. **เลือกวิธี** — Bedrock ไม่มีคำสั่งให้ Survival บินได้ตรง ๆ ยกเว้น `/ability mayfly`
+   ซึ่งใช้ได้เฉพาะเมื่อเปิด Education Edition จึงทำ 2 โหมด
+2. **ตรวจโหมด** — ตอนเปิดการบิน สคริปต์ลองรัน `ability @s mayfly true`
+   ถ้าสำเร็จใช้โหมด Native ถ้าล้มเหลวใช้โหมด Scripted
+3. **โหมด Scripted** — ทุก tick อ่านปุ่มกระโดด/ย่อ และจอยสติ๊ก (`inputInfo.getMovementVector()`)
+   แปลงเป็นทิศตามมุมกล้อง แล้วตั้งความเร็วด้วย `applyKnockback()`
+4. **กันตกตาย** — ใส่ Slow Falling แบบไม่มี particle ระหว่างบิน และหลังปิดการบิน
+5. **จำสถานะ** — เก็บใน Dynamic Property ของผู้เล่น แล้วคืนค่าเมื่อเกิดใหม่
+
+## ปรับแต่ง
+
+แก้ค่าด้านบนของ `scripts/main.js` เช่น `TOGGLE_ITEM`, `FLY_SPEED`, `SPRINT_SPEED`, `VERTICAL_SPEED`
+แล้วรัน `./build.sh` เพื่อสร้างไฟล์ `.mcaddon` ใหม่

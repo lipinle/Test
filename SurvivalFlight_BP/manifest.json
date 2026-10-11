@@ -1,0 +1,30 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Survival Flight",
+    "description": "บินได้ในโหมดเอาชีวิตรอด - ใช้ขนนก (Feather) เพื่อเปิด/ปิดการบิน",
+    "uuid": "73fd78b1-eb91-41a0-85e0-672e5ddd9dab",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "41f01b5e-4341-440e-8395-7318f14fcc64",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "08897dcd-4b5f-4b05-b0ad-e16cf255c876",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ]
+}
