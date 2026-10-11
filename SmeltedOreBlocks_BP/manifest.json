@@ -1,0 +1,30 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Smelted Ore Blocks",
+    "description": "ขุดแร่แล้วได้บล็อกของแร่ที่เผาแล้ว เช่น แร่เหล็ก → บล็อกเหล็ก",
+    "uuid": "01924d23-8113-4303-a720-d8afa297fe4b",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "a274d3e4-a403-4f8c-a8fa-ca0a5abe4717",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "e4369763-583a-4492-bc0b-7ee4c68a0504",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ]
+}
