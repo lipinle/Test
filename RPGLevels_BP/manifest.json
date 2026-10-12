@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RPG Levels",
+    "description": "ระบบเลเวลตัวละคร ค่าสถานะ ความชำนาญอาวุธ/อุปกรณ์ และสกิลพิเศษที่เปิด-ปิดได้",
+    "uuid": "48be2cbe-9c3b-4546-a0d0-924199fd6d1f",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "4d143f90-80f4-4a49-89c5-08a6f63704cd",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "1ac66d95-d7c5-452a-9dba-793ef4ac33a5",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "2.0.0" },
+    { "module_name": "@minecraft/server-ui", "version": "2.0.0" },
+    { "uuid": "d71783d7-c43d-49bd-b361-f3a9fa719af5", "version": [1, 0, 0] }
+  ]
+}

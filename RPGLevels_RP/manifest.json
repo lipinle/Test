@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RPG Levels (Resources)",
+    "description": "ไอคอนและชื่อไอเท็มของ RPG Levels",
+    "uuid": "d71783d7-c43d-49bd-b361-f3a9fa719af5",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "42ca1302-0bd0-481a-920b-03505a4d253d",
+      "version": [1, 0, 0]
+    }
+  ]
+}
