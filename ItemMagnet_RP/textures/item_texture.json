@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "item_magnet",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "magnet_item_magnet": {
+      "textures": "textures/items/item_magnet"
+    }
+  }
+}

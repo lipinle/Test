@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Item Magnet Resources",
+    "description": "พื้นผิวและชื่อของแม่เหล็กดูดของ (ใช้คู่กับ Item Magnet behavior pack)",
+    "uuid": "7f3a2f79-7cbe-4854-8dcb-11724fee48ee",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "963bb6f1-051d-44eb-bc1a-df6edc48cbab",
+      "version": [1, 0, 0]
+    }
+  ]
+}

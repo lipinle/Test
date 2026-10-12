@@ -180,3 +180,61 @@ build.sh               แพ็กเป็น SurvivalFlight.mcaddon
 แก้ค่าด้านบนของ `SwordSweep_BP/scripts/main.js`:
 `SWEEP_RANGE`, `SWEEP_HALF_ANGLE`, `SWEEP_DAMAGE_RATIO`, `COOLDOWN_TICKS`, `KNOCKBACK`, `HIT_PLAYERS`, `HIT_OWN_PETS`, `SWORD_DAMAGE`
 แล้วรัน `./build.sh` เพื่อสร้าง `.mcaddon` ใหม่
+
+---
+
+# Item Magnet — แม่เหล็กดูดของ (Minecraft Bedrock / มือถือ)
+
+ไอเท็มใหม่ **แม่เหล็กดูดของ** (รูปแม่เหล็กเกือกม้าสีแดง มีประกายเอนชานต์)
+**ย่อ + กดใช้ค้าง** แล้วไอเท็มที่ตกอยู่และลูกแก้ว XP ในระยะ **9 บล็อก** จะลอยเข้าหาตัว
+
+## ติดตั้ง
+
+1. ดาวน์โหลด `ItemMagnet.mcaddon` ลงมือถือ แล้วแตะเปิดด้วย Minecraft (นำเข้าได้ทั้ง Behavior + Resource Pack)
+2. ตั้งค่าโลก → **Behavior Packs** → **Available** → *Item Magnet* → **Activate**
+   (Resource Pack *Item Magnet Resources* จะถูกเปิดให้อัตโนมัติ)
+3. เข้าโลกแล้วไปหากล่องสมบัติได้เลย
+
+> ต้องใช้ Minecraft Bedrock 1.21.90 ขึ้นไป ไม่ต้องเปิด Experiments
+
+## วิธีได้แม่เหล็ก
+
+| วิธี | รายละเอียด |
+|---|---|
+| กล่องสมบัติในแมพ | เปิด Chest / Trapped Chest / Barrel ที่มีของอยู่แล้ว (ดันเจี้ยน, หมู่บ้าน, เรืออับปาง, ปิรามิด, เหมืองร้าง ฯลฯ) ครั้งแรก มีโอกาส **25%** เจอแม่เหล็กในกล่อง |
+| คำสั่ง (เปิดโกง) | `/magnet:magnet` — เสกให้ตัวเอง |
+| | `/magnet:magnet 3` — เสก 3 อัน |
+| | `/magnet:magnet 1 @a` — เสกให้ผู้เล่นทุกคน |
+| | `/give @s magnet:item_magnet` หรือ `/function magnet` ก็ได้ |
+
+- กล่องแต่ละใบสุ่มได้แค่ครั้งเดียว (เปิดซ้ำไม่ได้สุ่มใหม่)
+- กล่องที่ผู้เล่นวางเองจะไม่ถูกสุ่ม จึงฟาร์มด้วยการวางกล่องไม่ได้
+
+## วิธีใช้
+
+1. ถือแม่เหล็กไว้ในมือหลัก
+2. กด **ย่อ** ค้างไว้
+3. **แตะหน้าจอค้าง** (PC: คลิกขวาค้าง) — ไอเท็มและ XP ในระยะ 9 บล็อกจะลอยเข้าหาตัว
+4. ปล่อยนิ้ว / เลิกย่อ = แม่เหล็กหยุดทำงาน
+
+ถ้ากดใช้ค้างแต่ไม่ได้ย่อ จะขึ้นข้อความเตือนให้ย่อตัว
+
+## โครงสร้างไฟล์
+
+```
+ItemMagnet_BP/
+├── manifest.json                ผูกกับ RP + ใช้ Script API (@minecraft/server 2.0.0)
+├── items/item_magnet.json       นิยามไอเท็ม magnet:item_magnet (กดใช้ค้างได้)
+├── functions/magnet.mcfunction  /function magnet
+└── scripts/main.js              ดูดไอเท็ม, สุ่มลงกล่องสมบัติ, คำสั่ง /magnet:magnet
+ItemMagnet_RP/
+├── textures/items/item_magnet.png   พื้นผิว 16x16
+├── textures/item_texture.json
+└── texts/                           ชื่อไอเท็มภาษาไทย / อังกฤษ
+```
+
+## ปรับแต่ง
+
+แก้ค่าด้านบนของ `ItemMagnet_BP/scripts/main.js` เช่น `PULL_RADIUS` (ระยะดูด), `PULL_STEP` (ความเร็วดูด),
+`LOOT_CHANCE` (โอกาสเจอในกล่อง), `LOOT_CONTAINERS` (ชนิดกล่อง) แล้วรัน `./build.sh`
+อยากเปลี่ยนรูป ให้แทนที่ไฟล์ `ItemMagnet_RP/textures/items/item_magnet.png` (PNG 16x16)
