@@ -1,0 +1,46 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Sword Sweep",
+    "description": "ดาบตีกวาดได้เหมือน PC แค่กดตีก็กวาดศัตรูข้างหน้า ไม่ต้องเล็ง",
+    "uuid": "f79c473b-309c-40b7-82ff-e6244afded4e",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      10
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "35a63fd0-6443-46a1-bafa-c99f58f4fbae",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "4d76d6f2-34fd-410d-a2dc-5cae35319a9e",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.5.0"
+    }
+  ]
+}
