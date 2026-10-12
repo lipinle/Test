@@ -2,7 +2,7 @@
 # สร้างไฟล์ .mcaddon ของทุก addon สำหรับนำเข้าเกม
 set -e
 cd "$(dirname "$0")"
-for pack in SurvivalFlight SmeltedOreBlocks GearEffects SwordSweep RPGLevels; do
+for pack in SurvivalFlight SmeltedOreBlocks GearEffects SwordSweep RPGLevels SmartMobs; do
   rm -f "$pack.mcaddon"
   if [ -d "${pack}_RP" ]; then
     zip -r "$pack.mcaddon" "${pack}_BP" "${pack}_RP" -x '*.DS_Store'
