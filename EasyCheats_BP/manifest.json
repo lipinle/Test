@@ -1,0 +1,50 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Easy Cheats",
+    "description": "เปิดโกงแล้วพิมพ์คำสั่งสั้น ๆ ได้ เช่น /gmc /day /heal /god + เมนูกดสั่งโกงไม่ต้องพิมพ์ + มาโครรวมหลายคำสั่ง",
+    "uuid": "122d72d7-a94c-4650-bb42-254dcdea004e",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      10
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "446a9a32-1023-4dd6-94f7-5337a525693f",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "f7093ced-f453-411b-afef-5ab65aec107b",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.5.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ]
+}
