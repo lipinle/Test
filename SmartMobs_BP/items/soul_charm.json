@@ -1,0 +1,24 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "smartmobs:soul_charm",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "smartmobs_soul_charm"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.smartmobs:soul_charm.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:glint": true,
+      "minecraft:allow_off_hand": true
+    }
+  }
+}

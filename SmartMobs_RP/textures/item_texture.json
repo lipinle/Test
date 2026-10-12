@@ -1,0 +1,30 @@
+{
+  "resource_pack_name": "smart_mobs",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "smartmobs_kingslayer": {
+      "textures": "textures/items/smartmobs_kingslayer"
+    },
+    "smartmobs_doom_axe": {
+      "textures": "textures/items/smartmobs_doom_axe"
+    },
+    "smartmobs_titan_pickaxe": {
+      "textures": "textures/items/smartmobs_titan_pickaxe"
+    },
+    "smartmobs_titan_shovel": {
+      "textures": "textures/items/smartmobs_titan_shovel"
+    },
+    "smartmobs_thunder_staff": {
+      "textures": "textures/items/smartmobs_thunder_staff"
+    },
+    "smartmobs_void_pearl": {
+      "textures": "textures/items/smartmobs_void_pearl"
+    },
+    "smartmobs_soul_charm": {
+      "textures": "textures/items/smartmobs_soul_charm"
+    },
+    "smartmobs_cursed_skull": {
+      "textures": "textures/items/smartmobs_cursed_skull"
+    }
+  }
+}

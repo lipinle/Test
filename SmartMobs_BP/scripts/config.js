@@ -258,3 +258,172 @@ export const ALERTABLE = new Set([
 
 /** แมงมุมเป็นกลางตอนกลางวัน — ไม่ให้พุ่ง/ถูกเรียกรุมตอนกลางวัน */
 export const NIGHT_ONLY = new Set(["minecraft:spider", "minecraft:cave_spider"]);
+
+// ---------------------------------------------------------------------------
+// บอส
+// ---------------------------------------------------------------------------
+
+/** บอสเริ่มเกิดเองตามธรรมชาติตั้งแต่ระดับนี้ (ใช้กะโหลกต้องสาปเรียกได้ทุกระดับ) */
+export const BOSS_MIN_TIER = 2;
+/** โอกาสต่อมอน 1 ตัวที่เกิดตอนกลางคืน ที่จะกลายเป็นบอส: ค่าเริ่ม + เพิ่มต่อระดับ */
+export const BOSS_SPAWN_CHANCE = 0.001;
+export const BOSS_SPAWN_CHANCE_PER_TIER = 0.0005;
+/** หลังบอสเกิดเอง ต้องรออย่างน้อยกี่วันในเกม (24000 tick = 1 วัน) จึงจะเกิดเองได้อีก */
+export const BOSS_NATURAL_COOLDOWN_DAYS = 1;
+/** จำนวนบอสที่มีชีวิตพร้อมกันได้สูงสุด (นับเฉพาะรอบตัวผู้เล่น) */
+export const BOSS_MAX_ALIVE = 2;
+/** เลือดบอสคูณเพิ่มต่อระดับ */
+export const BOSS_HP_PER_TIER = 0.15;
+/** โอกาสดรอปของหายากคูณเพิ่มต่อระดับ */
+export const BOSS_LOOT_PER_TIER = 0.1;
+
+/**
+ * name      ชื่อที่แสดง
+ * base      มอนที่ใช้เป็นร่าง
+ * from      มอนที่เกิดตามธรรมชาติแล้วอาจกลายเป็นบอสตัวนี้
+ * hp        เลือด (ก่อนคูณระดับ)
+ * minion    ลูกน้องที่เรียกออกมา
+ * onHit     เอฟเฟกต์ที่ผู้เล่นโดนเมื่อบอส (หรือลูกธนูบอส) ตีโดน
+ * loot      ของหายาก { item, chance } — สุ่มแยกทีละชิ้น
+ */
+export const BOSSES = {
+  zombie_king: {
+    name: "ราชาซอมบี้",
+    base: "minecraft:zombie",
+    from: ["minecraft:zombie", "minecraft:husk", "minecraft:zombie_villager_v2"],
+    hp: 160,
+    minion: "minecraft:zombie",
+    onHit: { id: "hunger", amp: 2, ticks: 200 },
+    loot: [
+      { item: "smartmobs:kingslayer", chance: 0.2 },
+      { item: "smartmobs:titan_pickaxe", chance: 0.08 },
+      { item: "smartmobs:titan_shovel", chance: 0.08 },
+      { item: "smartmobs:soul_charm", chance: 0.04 },
+    ],
+  },
+  bone_lord: {
+    name: "จอมพลโครงกระดูก",
+    base: "minecraft:skeleton",
+    from: ["minecraft:skeleton", "minecraft:stray", "minecraft:bogged"],
+    hp: 130,
+    minion: "minecraft:stray",
+    onHit: { id: "slowness", amp: 1, ticks: 80 },
+    loot: [
+      { item: "smartmobs:thunder_staff", chance: 0.15 },
+      { item: "smartmobs:void_pearl", chance: 0.15 },
+      { item: "smartmobs:kingslayer", chance: 0.06 },
+    ],
+  },
+  brood_queen: {
+    name: "ราชินีแมงมุม",
+    base: "minecraft:spider",
+    from: ["minecraft:spider", "minecraft:cave_spider"],
+    hp: 120,
+    minion: "minecraft:cave_spider",
+    onHit: { id: "poison", amp: 1, ticks: 100 },
+    loot: [
+      { item: "smartmobs:void_pearl", chance: 0.2 },
+      { item: "smartmobs:titan_shovel", chance: 0.15 },
+      { item: "smartmobs:titan_pickaxe", chance: 0.08 },
+    ],
+  },
+  wither_knight: {
+    name: "อัศวินวิเธอร์",
+    base: "minecraft:wither_skeleton",
+    from: ["minecraft:wither_skeleton"],
+    hp: 200,
+    minion: "minecraft:wither_skeleton",
+    onHit: { id: "wither", amp: 1, ticks: 80 },
+    loot: [
+      { item: "smartmobs:doom_axe", chance: 0.2 },
+      { item: "smartmobs:titan_pickaxe", chance: 0.1 },
+      { item: "smartmobs:soul_charm", chance: 0.08 },
+    ],
+  },
+  warlord: {
+    name: "จอมทัพอิลเลเจอร์",
+    base: "minecraft:vindicator",
+    from: ["minecraft:pillager", "minecraft:vindicator"],
+    hp: 170,
+    minion: "minecraft:vex",
+    onHit: { id: "weakness", amp: 0, ticks: 100 },
+    loot: [
+      { item: "smartmobs:doom_axe", chance: 0.15 },
+      { item: "smartmobs:kingslayer", chance: 0.1 },
+      { item: "smartmobs:thunder_staff", chance: 0.1 },
+      { item: "smartmobs:soul_charm", chance: 0.05 },
+    ],
+  },
+};
+
+/** ของที่บอสทุกตัวดรอป { item, chance, min, max } */
+export const BOSS_COMMON_LOOT = [
+  { item: "minecraft:diamond", chance: 1, min: 2, max: 5 },
+  { item: "minecraft:netherite_scrap", chance: 0.35, min: 1, max: 2 },
+  { item: "minecraft:golden_apple", chance: 0.5, min: 1, max: 2 },
+  { item: "minecraft:enchanted_golden_apple", chance: 0.03, min: 1, max: 1 },
+  { item: "minecraft:totem_of_undying", chance: 0.1, min: 1, max: 1 },
+  { item: "smartmobs:cursed_skull", chance: 0.15, min: 1, max: 1 },
+];
+
+// ---------------------------------------------------------------------------
+// ไอเท็มพิเศษ
+// ---------------------------------------------------------------------------
+
+/** ดาบสังหารราชันย์: ดูดเลือดกี่ส่วนของดาเมจ */
+export const KINGSLAYER_LIFESTEAL = 0.15;
+/** ขวานพิฆาต: ดาเมจกวาดโดนมอนรอบตัว (ส่วนของดาเมจ) และรัศมี */
+export const DOOM_AXE_CLEAVE = 0.5;
+export const DOOM_AXE_RADIUS = 3;
+/** อุปกรณ์ไททัน/อาวุธบอส: โอกาสเสียความทนทาน 1 หน่วยต่อการใช้ 1 ครั้ง (ทนทานจริง ~ max / ค่านี้) */
+export const LEGENDARY_WEAR_CHANCE = 0.05;
+/** คทาสายฟ้า */
+export const THUNDER_RANGE = 40;
+export const THUNDER_DAMAGE = 14;
+export const THUNDER_COOLDOWN = 30;
+/** ไข่มุกมิติ */
+export const VOID_PEARL_RANGE = 48;
+export const VOID_PEARL_COOLDOWN = 30;
+/** เครื่องรางวิญญาณ (ถือมือรอง) */
+export const SOUL_CHARM_EFFECTS = [
+  { id: "strength", amp: 1 },
+  { id: "resistance", amp: 0 },
+  { id: "regeneration", amp: 0 },
+  { id: "fire_resistance", amp: 0 },
+];
+
+/** ชื่อและคำอธิบาย (lore) ของไอเท็มพิเศษ — ใช้ตอนดรอปและประกาศ */
+export const LEGENDARY_INFO = {
+  "smartmobs:kingslayer": {
+    name: "§6ดาบสังหารราชันย์",
+    lore: ["§7ดาเมจโจมตี §c30", "§7ดูดเลือด §a15%§7 ของดาเมจ", "§8แทบไม่มีวันพัง"],
+  },
+  "smartmobs:doom_axe": {
+    name: "§5ขวานพิฆาต",
+    lore: ["§7ดาเมจโจมตี §c25", "§7ฟันกวาดมอนรอบตัว §c50%", "§7ตัดไม้เร็วมาก", "§8แทบไม่มีวันพัง"],
+  },
+  "smartmobs:titan_pickaxe": {
+    name: "§bอีเต้อไททัน",
+    lore: ["§7ขุดหิน/แร่เร็วมาก (เร็วกว่าเนเธอไรต์ ~13 เท่า)", "§7ขุดได้ทุกแร่", "§8แทบไม่มีวันพัง"],
+  },
+  "smartmobs:titan_shovel": {
+    name: "§bพลั่วไททัน",
+    lore: ["§7ขุดดิน/ทราย/กรวด/หิมะเร็วมาก", "§8แทบไม่มีวันพัง"],
+  },
+  "smartmobs:thunder_staff": {
+    name: "§eคทาสายฟ้า",
+    lore: ["§7กดใช้: เรียกฟ้าผ่าตรงจุดที่มอง", "§7ดาเมจเพิ่ม §c14§7 ใส่เป้าหมาย"],
+  },
+  "smartmobs:void_pearl": {
+    name: "§dไข่มุกมิติ",
+    lore: ["§7กดใช้: วาร์ปไปจุดที่มอง (48 บล็อก)", "§7ไม่หายไปเหมือน Ender Pearl"],
+  },
+  "smartmobs:soul_charm": {
+    name: "§3เครื่องรางวิญญาณ",
+    lore: ["§7ถือมือรอง: พลังโจมตี II, ต้านทาน I,", "§7ฟื้นเลือด I, กันไฟ"],
+  },
+  "smartmobs:cursed_skull": {
+    name: "§4กะโหลกต้องสาป",
+    lore: ["§7กดใช้: เรียกบอสสุ่ม 1 ตัว", "§c(บอสเก่งตามระดับของวันนั้น)"],
+  },
+};

@@ -1,0 +1,38 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "smartmobs:cursed_skull"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:bone"
+      }
+    ],
+    "pattern": [
+      "BRB",
+      "RDR",
+      "BRB"
+    ],
+    "key": {
+      "B": {
+        "item": "minecraft:bone"
+      },
+      "R": {
+        "item": "minecraft:rotten_flesh"
+      },
+      "D": {
+        "item": "minecraft:diamond"
+      }
+    },
+    "result": {
+      "item": "smartmobs:cursed_skull"
+    }
+  }
+}

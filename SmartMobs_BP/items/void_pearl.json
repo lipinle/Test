@@ -1,0 +1,36 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "smartmobs:void_pearl",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "smartmobs_void_pearl"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.smartmobs:void_pearl.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:glint": true,
+      "minecraft:durability": {
+        "max_durability": 500
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:ender_pearl"
+            ],
+            "repair_amount": 50
+          }
+        ]
+      }
+    }
+  }
+}

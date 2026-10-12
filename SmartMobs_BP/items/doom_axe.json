@@ -1,0 +1,67 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "smartmobs:doom_axe",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.axe"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "smartmobs_doom_axe"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.smartmobs:doom_axe.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:glint": true,
+      "minecraft:damage": {
+        "value": 25
+      },
+      "minecraft:durability": {
+        "max_durability": 30000,
+        "damage_chance": {
+          "min": 5,
+          "max": 10
+        }
+      },
+      "minecraft:enchantable": {
+        "slot": "axe",
+        "value": 15
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:netherite_ingot"
+            ],
+            "repair_amount": 7500
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "minecraft:is_axe",
+          "minecraft:is_tool",
+          "minecraft:netherite_tier"
+        ]
+      },
+      "minecraft:digger": {
+        "use_efficiency": true,
+        "destroy_speeds": [
+          {
+            "block": {
+              "tags": "query.any_tag('minecraft:is_axe_item_destructible', 'wood', 'log', 'pumpkin')"
+            },
+            "speed": 120
+          }
+        ]
+      }
+    }
+  }
+}

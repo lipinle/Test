@@ -185,3 +185,17 @@ export function outfit(entity, tierIndex) {
 
   applyEffects(entity, tier);
 }
+
+/** แต่งตัวเต็มยศให้บอส: เกราะครบ 4 ชิ้น + อาวุธ (ถ้ามอนใส่ได้) ติดเอนชานต์แน่นอน */
+export function outfitBoss(entity, tierIndex) {
+  const kind = MOB_KIND[entity.typeId];
+  entity.addTag(MOB_TAG);
+  const base = TIERS[Math.max(1, Math.min(tierIndex, TIERS.length - 1))];
+  const tier = { ...base, armorChance: 1, weaponChance: 1, enchant: Math.max(2, base.enchant), enchantChance: 1 };
+  if (!kind || kind === "buff") return;
+  for (const [slot, piece, cmdSlot] of ARMOR_PIECES) {
+    equip(entity, slot, cmdSlot, `${pick(tier.armor.length ? tier.armor : ["iron"])}_${piece}`, tier);
+  }
+  const weapon = pickWeapon(kind === "drowned" ? "melee" : kind, tier) ?? (kind === "melee" ? "iron_sword" : undefined);
+  if (weapon) equip(entity, EquipmentSlot.Mainhand, "slot.weapon.mainhand", weapon, tier);
+}

@@ -3,16 +3,20 @@
 // - มอนที่เกิดใหม่ได้เกราะ/อาวุธ/เอนชานต์/เอฟเฟกต์ตามระดับของวันนั้น (config.js -> TIERS)
 // - AI เพิ่ม: พุ่งกระโจน, กระโดดหาคนต่อเสา, ถอยหนีแล้วยิง, หลบข้าง, เรียกพวก, ล่าเป็นฝูง, ฮึดสู้ (ai.js)
 // - ของที่ใส่ให้ดรอปตามโอกาสที่ตั้งไว้เท่านั้น กันฟาร์มเพชร/เนเธอไรต์ฟรี
+// - บอส 5 ตัว มีท่าพิเศษ ดรอปไอเท็มหายาก (boss.js, items.js)
 //
 // คำสั่ง (ต้องเปิดโกง):
 //   /scriptevent smartmobs:status        ดูวันและระดับปัจจุบัน
 //   /scriptevent smartmobs:tier 5        บังคับระดับ (ทดสอบ)
 //   /scriptevent smartmobs:tier auto     กลับไปใช้ระดับตามวัน
+//   /scriptevent smartmobs:boss [ชื่อ]    เรียกบอส (zombie_king, bone_lord, brood_queen, wither_knight, warlord)
 
 import { Player, system, world } from "@minecraft/server";
 import { aiTick, onHurt } from "./ai.js";
-import { ANNOUNCE_TIER_UP, GEAR_DROP_CHANCE, MOB_KIND, TIERS } from "./config.js";
+import { bossTick, maybeNaturalBoss, MINION_TAG, onBossDie, onBossHurt, summonBossNear } from "./boss.js";
+import { ANNOUNCE_TIER_UP, BOSSES, GEAR_DROP_CHANCE, MOB_KIND, TIERS } from "./config.js";
 import { GEAR_IDS, GEAR_LORE, MOB_TAG, outfit, usingCommandFallback } from "./gear.js";
+import { charmTick, onItemBreakBlock, onItemHit, onItemUse } from "./items.js";
 import { currentDay, currentTier, currentTierIndex, forcedTier, setForcedTier } from "./tier.js";
 import { chance } from "./util.js";
 
@@ -34,10 +38,13 @@ world.afterEvents.entitySpawn.subscribe((ev) => {
     return;
   }
   if (!MOB_KIND[type]) return;
+  const cause = ev.cause;
   // รอ 1 tick ให้มอนโหลดอุปกรณ์เริ่มต้นเสร็จก่อน
   system.run(() => {
     try {
-      if (entity.isValid && !entity.hasTag(MOB_TAG)) outfit(entity, currentTierIndex());
+      if (!entity.isValid || entity.hasTag(MOB_TAG)) return;
+      if (!entity.hasTag(MINION_TAG) && maybeNaturalBoss(entity, cause)) return;
+      outfit(entity, currentTierIndex());
     } catch {
       // มอนหายไปแล้ว
     }
@@ -53,6 +60,11 @@ world.afterEvents.entityDie.subscribe((ev) => {
     const dead = ev.deadEntity;
     if (!MOB_KIND[dead.typeId] || !dead.hasTag(MOB_TAG)) return;
     recordDeath(dead);
+  } catch {
+    // ไม่เป็นไร
+  }
+  try {
+    onBossDie(ev);
   } catch {
     // ไม่เป็นไร
   }
@@ -93,7 +105,36 @@ world.afterEvents.entityHurt.subscribe((ev) => {
       const hp = victim.getComponent("minecraft:health");
       if (hp && hp.currentValue <= 0) recordDeath(victim);
     }
+    onBossHurt(ev);
     onHurt(ev, currentTier());
+  } catch {
+    // ไม่เป็นไร
+  }
+  try {
+    onItemHit(ev);
+  } catch {
+    // ไม่เป็นไร
+  }
+});
+
+// ---------------------------------------------------------------------------
+// บอสและไอเท็มพิเศษ
+// ---------------------------------------------------------------------------
+
+system.runInterval(() => bossTick(), 10);
+system.runInterval(() => charmTick(world.getAllPlayers()), 20);
+
+world.afterEvents.itemUse.subscribe((ev) => {
+  try {
+    onItemUse(ev);
+  } catch {
+    // ไม่เป็นไร
+  }
+});
+
+world.afterEvents.playerBreakBlock.subscribe((ev) => {
+  try {
+    onItemBreakBlock(ev);
   } catch {
     // ไม่เป็นไร
   }
@@ -169,7 +210,19 @@ system.afterEvents.scriptEventReceive.subscribe((ev) => {
       reply(statusText());
       break;
     }
+    case "smartmobs:boss": {
+      if (!(ev.sourceEntity instanceof Player)) {
+        reply("§cต้องใช้คำสั่งนี้จากตัวผู้เล่น");
+        return;
+      }
+      if (arg && !BOSSES[arg]) {
+        reply(`§cไม่มีบอสชื่อนี้ เลือก: ${Object.keys(BOSSES).join(", ")}`);
+        return;
+      }
+      summonBossNear(ev.sourceEntity, arg || undefined);
+      break;
+    }
     default:
-      reply("§7คำสั่ง: smartmobs:status, smartmobs:tier <เลข|auto>");
+      reply("§7คำสั่ง: smartmobs:status, smartmobs:tier <เลข|auto>, smartmobs:boss [ชื่อบอส]");
   }
 });
