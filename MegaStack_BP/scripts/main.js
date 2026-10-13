@@ -27,6 +27,7 @@ const ORPHAN_GRACE = 10; // ป้ายที่หาเจ้าของไ�
 const removing = new Map(); // entity.id -> tick: entity ที่สคริปต์ลบเอง ไม่ต้องคืนของ
 const mergedAt = new Map(); // entity.id -> tick ที่เพิ่งมีกองอื่นวาปมารวม
 const orphanSince = new Map(); // hologram.id -> tick ที่เริ่มไม่มีเจ้าของ
+const followers = new Map(); // hologram.id -> { holo, item, at }: ป้ายที่ต้องตามไอเท็มทุก tick
 
 // ---------------------------------------------------------------------------
 // ข้อมูลไอเท็ม
@@ -190,20 +191,47 @@ function givePickup(dim, s) {
   }
 }
 
+function abovePos(loc) {
+  return { x: loc.x, y: loc.y + HOLOGRAM_HEIGHT, z: loc.z };
+}
+
+// ย้ายป้ายไปเหนือไอเท็ม เฉพาะตอนไอเท็มขยับ (ไอเท็มอยู่นิ่ง = ไม่ส่งข้อมูลอะไรเลย)
+function follow(f) {
+  const pos = abovePos(f.item.location);
+  const at = f.at;
+  if (at && Math.abs(at.x - pos.x) + Math.abs(at.y - pos.y) + Math.abs(at.z - pos.z) < 0.01) return;
+  f.holo.teleport(pos);
+  f.at = pos;
+}
+
+// entity ที่ได้จาก getEntities แต่ละครั้งอาจเป็นคนละ object จึงเทียบด้วย id
+function track(holo, item) {
+  let f = followers.get(holo.id);
+  if (!f || f.item.id !== item.id) {
+    f = { holo, item, at: undefined };
+    followers.set(holo.id, f);
+  } else {
+    f.holo = holo;
+    f.item = item;
+  }
+  return f;
+}
+
 // วางป้ายลอยเหนือกอง คืนค่า false ถ้าสร้างป้ายไม่ได้
 function syncHologram(dim, s, holo, label) {
-  const pos = { x: s.loc.x, y: s.loc.y + HOLOGRAM_HEIGHT, z: s.loc.z };
   if (!holo?.isValid) {
+    const pos = abovePos(s.loc);
     try {
       holo = dim.spawnEntity(HOLOGRAM, pos);
     } catch {
       return false;
     }
     holo.setDynamicProperty(P_OWNER, s.entity.id);
+    track(holo, s.entity).at = pos;
   } else {
-    const h = holo.location;
-    // ย้ายตามเฉพาะตอนไอเท็มขยับ ลดการส่งข้อมูล
-    if (Math.abs(h.x - pos.x) + Math.abs(h.y - pos.y) + Math.abs(h.z - pos.z) > 0.05) holo.teleport(pos);
+    const f = track(holo, s.entity);
+    f.at = holo.location; // ตรวจตำแหน่งจริงของป้ายทุกรอบสแกน เผื่อมีอะไรไปขยับมัน
+    follow(f);
   }
   if (holo.nameTag !== label) holo.nameTag = label;
   return true;
@@ -322,6 +350,19 @@ system.runInterval(() => {
   for (const [id, t] of orphanSince) if (tick - t > 200) orphanSince.delete(id);
 }, SCAN_INTERVAL);
 
+// ป้ายตามไอเท็มทุก tick ให้ลื่น (สแกนหลักทำแค่ทุก 5 tick)
+system.runInterval(() => {
+  for (const [id, f] of followers) {
+    if (!f.holo.isValid || !f.item.isValid) {
+      followers.delete(id);
+      continue;
+    }
+    try {
+      follow(f);
+    } catch {}
+  }
+}, 1);
+
 // ---------------------------------------------------------------------------
 // ตัว entity ของกองหายไป (ถูกเก็บ / ถูกรวมโดยเกม / ลงฮอปเปอร์ / ไหม้ ฯลฯ)
 // ---------------------------------------------------------------------------
@@ -372,6 +413,7 @@ function handOverHologram(dim, loc, oldId, newEntity, remainder) {
     if (holo.getDynamicProperty(P_OWNER) !== oldId) continue;
     if (newEntity?.isValid) {
       holo.setDynamicProperty(P_OWNER, newEntity.id);
+      follow(track(holo, newEntity));
       holo.nameTag = makeLabel(readStack(newEntity), remainder);
     } else removeQuietly(holo);
   }
