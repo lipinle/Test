@@ -1,0 +1,46 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Spear Mastery",
+    "description": "หอกเก่งขึ้น: ล็อกเป้าอัตโนมัติ ไม่ต้องเล็ง แทงทะลุ พุ่งแทง ขว้างหอกวิญญาณติดตามเป้า ฝนหอก และกระโดดปักหอกกระแทกพื้น",
+    "uuid": "c4a66116-fd0d-460f-b289-470ff2d0c6f1",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      10
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "2ca5e5b8-5faf-4ccb-beb0-6820e1f31627",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "1d5cbaa9-7bac-40fd-b091-acc059764227",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.5.0"
+    }
+  ]
+}
