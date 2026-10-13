@@ -1,0 +1,48 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:storm_staff",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_storm_staff"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:storm_staff.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": {
+        "value": 4
+      },
+      "minecraft:durability": {
+        "max_durability": 700
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:copper_ingot"
+            ],
+            "repair_amount": 175
+          }
+        ]
+      },
+      "minecraft:enchantable": {
+        "slot": "sword",
+        "value": 12
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:staff"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "arc:void_crystal",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "arc_void_crystal",
+          "arc_void",
+          "monster"
+        ]
+      },
+      "minecraft:health": {
+        "value": 40,
+        "max": 40
+      },
+      "minecraft:collision_box": {
+        "width": 1.0,
+        "height": 2.0
+      },
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:movement": {
+        "value": 0
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:persistent": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "fall",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "suffocation",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/arc_void_crystal.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "10"
+      }
+    }
+  }
+}

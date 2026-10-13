@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Arcane Ascension (Resources)",
+    "description": "โมเดล 3D, เท็กซ์เจอร์, เอฟเฟกต์เวท, ฟอนต์ไอคอน HUD และหมอกของ Arcane Ascension",
+    "uuid": "013e1876-ad8e-44f1-9d21-a6c4de178c6e",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "7b001c9e-f862-4569-ac5d-05dafa3407fe",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

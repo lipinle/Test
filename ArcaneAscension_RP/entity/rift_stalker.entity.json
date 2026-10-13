@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:rift_stalker",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/rift_stalker",
+        "glow": "textures/entity/arc/rift_stalker_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.rift_stalker"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "walk": "animation.arc.rift_stalker.walk",
+        "look": "animation.arc.common.look_at_target",
+        "attack": "animation.arc.rift_stalker.attack"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#1d1b38",
+        "overlay_color": "#ff4dd8"
+      }
+    }
+  }
+}

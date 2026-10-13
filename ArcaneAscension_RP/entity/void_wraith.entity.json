@@ -1,0 +1,43 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:void_wraith",
+      "materials": {
+        "default": "entity_alphablend",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/void_wraith",
+        "glow": "textures/entity/arc/void_wraith_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.void_wraith"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "idle": "animation.arc.void_wraith.idle",
+        "move": "animation.arc.void_wraith.move",
+        "look": "animation.arc.common.look_at_target",
+        "attack": "animation.arc.void_wraith.attack",
+        "cast": "animation.arc.void_wraith.cast"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "move": "query.modified_move_speed > 0.05"
+          },
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#2a1640",
+        "overlay_color": "#5ff7ff"
+      }
+    }
+  }
+}

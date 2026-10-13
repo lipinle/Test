@@ -1,0 +1,25 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "arc:arcane_shard_from_block"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:arcane_crystal_block"
+      }
+    ],
+    "ingredients": [
+      {
+        "item": "arc:arcane_crystal_block"
+      }
+    ],
+    "result": {
+      "item": "arc:arcane_shard",
+      "count": 9
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.arc.ember_colossus.walk": {
+      "loop": true,
+      "bones": {
+        "left_leg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed * 0.6",
+            0,
+            0
+          ]
+        },
+        "right_leg": {
+          "rotation": [
+            "-math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed * 0.6",
+            0,
+            0
+          ]
+        },
+        "left_arm": {
+          "rotation": [
+            "-math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed * 0.4",
+            0,
+            -4
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed * 0.4",
+            0,
+            4
+          ]
+        },
+        "crown": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 240) * 0.4",
+            0
+          ]
+        }
+      }
+    },
+    "animation.arc.ember_colossus.slam": {
+      "animation_length": 1.2,
+      "bones": {
+        "left_arm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -170,
+              0,
+              0
+            ],
+            "0.75": [
+              10,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -170,
+              0,
+              0
+            ],
+            "0.75": [
+              10,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -12,
+              0,
+              0
+            ],
+            "0.75": [
+              18,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.arc.ember_colossus.throw": {
+      "animation_length": 0.8,
+      "bones": {
+        "right_arm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.35": [
+              -160,
+              0,
+              20
+            ],
+            "0.55": [
+              -40,
+              0,
+              0
+            ],
+            "0.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.arc.ember_colossus.roar": {
+      "animation_length": 1.5,
+      "bones": {
+        "head": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              -30,
+              0,
+              0
+            ],
+            "1.2": [
+              -30,
+              0,
+              0
+            ],
+            "1.5": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "left_arm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              -40,
+              0,
+              -50
+            ],
+            "1.2": [
+              -40,
+              0,
+              -50
+            ],
+            "1.5": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              -40,
+              0,
+              50
+            ],
+            "1.2": [
+              -40,
+              0,
+              50
+            ],
+            "1.5": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

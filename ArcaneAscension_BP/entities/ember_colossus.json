@@ -1,0 +1,165 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "arc:ember_colossus",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0
+      },
+      "minecraft:nameable": {},
+      "minecraft:jump.static": {},
+      "minecraft:movement.basic": {},
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.hurt_by_target": {
+        "priority": 1
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 8,
+        "look_distance": 8
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 9
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:persistent": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "fall",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "suffocation",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "drowning",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "lava",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:follow_range": {
+        "value": 64,
+        "max": 64
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 7,
+        "speed_multiplier": 0.6
+      },
+      "minecraft:type_family": {
+        "family": [
+          "arc_ember_colossus",
+          "arc_boss",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:health": {
+        "value": 600,
+        "max": 600
+      },
+      "minecraft:attack": {
+        "damage": 14
+      },
+      "minecraft:collision_box": {
+        "width": 2.4,
+        "height": 4.0
+      },
+      "minecraft:movement": {
+        "value": 0.25
+      },
+      "minecraft:navigation.walk": {
+        "can_path_over_lava": true,
+        "avoid_water": true
+      },
+      "minecraft:lava_movement": {
+        "value": 0.25
+      },
+      "minecraft:boss": {
+        "hud_range": 48,
+        "should_darken_sky": false
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 3,
+        "speed_multiplier": 1.1,
+        "track_target": true
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/arc_ember_colossus.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "300"
+      },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 2,
+        "must_see": false,
+        "reselect_targets": true,
+        "within_radius": 48,
+        "entity_types": [
+          {
+            "filters": {
+              "any_of": [
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "player"
+                },
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "arc_ally"
+                },
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "irongolem"
+                }
+              ]
+            },
+            "max_dist": 48
+          }
+        ]
+      }
+    },
+    "component_groups": {
+      "arc:enraged": {
+        "minecraft:movement": {
+          "value": 0.33
+        },
+        "minecraft:attack": {
+          "damage": 18
+        }
+      }
+    },
+    "events": {
+      "arc:enrage": {
+        "add": {
+          "component_groups": [
+            "arc:enraged"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "arc:arcane_ingot"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:arcane_shard"
+      }
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:iron_ingot"
+      },
+      {
+        "item": "arc:arcane_shard"
+      },
+      {
+        "item": "arc:arcane_shard"
+      },
+      {
+        "item": "arc:arcane_shard"
+      },
+      {
+        "item": "arc:arcane_shard"
+      }
+    ],
+    "result": {
+      "item": "arc:arcane_ingot",
+      "count": 1
+    }
+  }
+}

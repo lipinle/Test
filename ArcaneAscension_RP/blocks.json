@@ -1,0 +1,30 @@
+{
+  "format_version": "1.21.40",
+  "arc:arcane_ore": {
+    "sound": "stone"
+  },
+  "arc:deepslate_arcane_ore": {
+    "sound": "deepslate"
+  },
+  "arc:arcane_crystal_block": {
+    "sound": "amethyst_block"
+  },
+  "arc:rift_bricks": {
+    "sound": "deepslate_bricks"
+  },
+  "arc:rift_tiles": {
+    "sound": "deepslate_bricks"
+  },
+  "arc:void_lamp": {
+    "sound": "glass"
+  },
+  "arc:rift_barrier": {
+    "sound": "glass"
+  },
+  "arc:waystone": {
+    "sound": "lodestone"
+  },
+  "arc:arcane_altar": {
+    "sound": "stone"
+  }
+}

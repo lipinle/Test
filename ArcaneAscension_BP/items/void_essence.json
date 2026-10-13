@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:void_essence",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_void_essence"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:void_essence.name"
+      },
+      "minecraft:max_stack_size": 64
+    }
+  }
+}

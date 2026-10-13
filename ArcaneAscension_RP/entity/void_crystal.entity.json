@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:void_crystal",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/arc/void_crystal"
+      },
+      "geometry": {
+        "default": "geometry.arc.void_crystal"
+      },
+      "render_controllers": [
+        "controller.render.arc_fullbright"
+      ],
+      "animations": {
+        "idle": "animation.arc.void_crystal.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#1a1030",
+        "overlay_color": "#e08bff"
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:voidplate_leggings",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.leggings"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_voidplate_leggings"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:voidplate_leggings.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:wearable": {
+        "slot": "slot.armor.legs",
+        "protection": 7
+      },
+      "minecraft:durability": {
+        "max_durability": 700
+      },
+      "minecraft:enchantable": {
+        "slot": "armor_legs",
+        "value": 12
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "arc:void_essence"
+            ],
+            "repair_amount": 175
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:voidplate"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format_version": "1.8.0",
+  "minecraft:spawn_rules": {
+    "description": {
+      "identifier": "arc:ember_imp",
+      "population_control": "monster"
+    },
+    "conditions": [
+      {
+        "minecraft:spawns_underground": {},
+        "minecraft:spawns_on_block_prevented_filter": [
+          "minecraft:nether_wart_block",
+          "minecraft:shroomlight"
+        ],
+        "minecraft:brightness_filter": {
+          "min": 0,
+          "max": 11,
+          "adjust_for_weather": false
+        },
+        "minecraft:difficulty_filter": {
+          "min": "easy",
+          "max": "hard"
+        },
+        "minecraft:weight": {
+          "default": 18
+        },
+        "minecraft:herd": {
+          "min_size": 1,
+          "max_size": 3
+        },
+        "minecraft:density_limit": {
+          "underground": 4
+        },
+        "minecraft:biome_filter": {
+          "test": "has_biome_tag",
+          "value": "nether"
+        }
+      }
+    ]
+  }
+}

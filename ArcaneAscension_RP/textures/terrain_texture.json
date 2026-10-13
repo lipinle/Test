@@ -1,0 +1,35 @@
+{
+  "resource_pack_name": "arcane_ascension",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "arc_arcane_ore": {
+      "textures": "textures/blocks/arc_arcane_ore"
+    },
+    "arc_deepslate_arcane_ore": {
+      "textures": "textures/blocks/arc_deepslate_arcane_ore"
+    },
+    "arc_arcane_crystal_block": {
+      "textures": "textures/blocks/arc_arcane_crystal_block"
+    },
+    "arc_rift_bricks": {
+      "textures": "textures/blocks/arc_rift_bricks"
+    },
+    "arc_rift_tiles": {
+      "textures": "textures/blocks/arc_rift_tiles"
+    },
+    "arc_void_lamp": {
+      "textures": "textures/blocks/arc_void_lamp"
+    },
+    "arc_rift_barrier": {
+      "textures": "textures/blocks/arc_rift_barrier"
+    },
+    "arc_waystone": {
+      "textures": "textures/blocks/arc_waystone"
+    },
+    "arc_arcane_altar": {
+      "textures": "textures/blocks/arc_arcane_altar"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:damage_text",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/arc/damage_text"
+      },
+      "geometry": {
+        "default": "geometry.arc.damage_text"
+      },
+      "render_controllers": [
+        "controller.render.arc_default"
+      ]
+    }
+  }
+}

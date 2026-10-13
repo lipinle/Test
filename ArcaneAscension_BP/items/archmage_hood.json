@@ -1,0 +1,49 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:archmage_hood",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.helmet"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_archmage_hood"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:archmage_hood.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:wearable": {
+        "slot": "slot.armor.head",
+        "protection": 2
+      },
+      "minecraft:durability": {
+        "max_durability": 260
+      },
+      "minecraft:enchantable": {
+        "slot": "armor_head",
+        "value": 15
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "arc:arcane_ingot"
+            ],
+            "repair_amount": 65
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:archmage"
+        ]
+      }
+    }
+  }
+}

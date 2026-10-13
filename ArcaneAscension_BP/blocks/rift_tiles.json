@@ -1,0 +1,26 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:block": {
+    "description": {
+      "identifier": "arc:rift_tiles",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 2.0
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 6
+      },
+      "minecraft:map_color": "#2c2246",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "arc_rift_tiles",
+          "render_method": "opaque"
+        }
+      }
+    }
+  }
+}

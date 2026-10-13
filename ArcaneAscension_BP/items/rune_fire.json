@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:rune_fire",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_rune_fire"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:rune_fire.name"
+      },
+      "minecraft:max_stack_size": 16
+    }
+  }
+}

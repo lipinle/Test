@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:spirit_wolf",
+      "materials": {
+        "default": "entity_alphablend",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/spirit_wolf",
+        "glow": "textures/entity/arc/spirit_wolf_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.spirit_wolf"
+      },
+      "render_controllers": [
+        "controller.render.arc_fullbright",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "walk": "animation.arc.spirit_wolf.walk",
+        "look": "animation.arc.common.look_at_target"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#7fe6ff",
+        "overlay_color": "#ffffff"
+      }
+    }
+  }
+}

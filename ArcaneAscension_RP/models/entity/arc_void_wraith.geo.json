@@ -1,0 +1,217 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.arc.void_wraith",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 3,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          1.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "body",
+          "pivot": [
+            0,
+            14,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                -4,
+                12,
+                -3
+              ],
+              "size": [
+                8,
+                11,
+                6
+              ],
+              "uv": [
+                0,
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "name": "skirt",
+          "pivot": [
+            0,
+            12,
+            0
+          ],
+          "parent": "body",
+          "cubes": [
+            {
+              "origin": [
+                -5,
+                5,
+                -4
+              ],
+              "size": [
+                10,
+                7,
+                8
+              ],
+              "uv": [
+                0,
+                36
+              ]
+            }
+          ]
+        },
+        {
+          "name": "tail",
+          "pivot": [
+            0,
+            5,
+            0
+          ],
+          "parent": "skirt",
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                0,
+                -2
+              ],
+              "size": [
+                6,
+                5,
+                5
+              ],
+              "uv": [
+                36,
+                36
+              ]
+            }
+          ]
+        },
+        {
+          "name": "head",
+          "pivot": [
+            0,
+            23,
+            0
+          ],
+          "parent": "body",
+          "cubes": [
+            {
+              "origin": [
+                -5,
+                23,
+                -5
+              ],
+              "size": [
+                10,
+                9,
+                10
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -1,
+                32,
+                -1
+              ],
+              "size": [
+                2,
+                2,
+                3
+              ],
+              "rotation": [
+                -25,
+                0,
+                0
+              ],
+              "pivot": [
+                0.0,
+                33.0,
+                0.5
+              ],
+              "uv": [
+                0,
+                51
+              ]
+            }
+          ]
+        },
+        {
+          "name": "left_arm",
+          "pivot": [
+            5,
+            22,
+            0
+          ],
+          "parent": "body",
+          "cubes": [
+            {
+              "origin": [
+                4,
+                9,
+                -2
+              ],
+              "size": [
+                3,
+                13,
+                4
+              ],
+              "uv": [
+                28,
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "name": "right_arm",
+          "pivot": [
+            -5,
+            22,
+            0
+          ],
+          "parent": "body",
+          "cubes": [
+            {
+              "origin": [
+                -7,
+                9,
+                -2
+              ],
+              "size": [
+                3,
+                13,
+                4
+              ],
+              "uv": [
+                42,
+                19
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

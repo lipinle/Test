@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:ember_imp",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/ember_imp",
+        "glow": "textures/entity/arc/ember_imp_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.ember_imp"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "walk": "animation.arc.ember_imp.walk",
+        "idle": "animation.arc.ember_imp.idle",
+        "look": "animation.arc.common.look_at_target",
+        "attack": "animation.arc.ember_imp.attack"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "idle",
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#b8321c",
+        "overlay_color": "#ffe14d"
+      }
+    }
+  }
+}

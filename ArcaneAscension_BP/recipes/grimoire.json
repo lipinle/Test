@@ -1,0 +1,31 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "arc:grimoire"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "arc:arcane_shard"
+      }
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "arc:arcane_shard"
+      }
+    ],
+    "result": {
+      "item": "arc:grimoire",
+      "count": 1
+    }
+  }
+}

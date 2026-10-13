@@ -1,0 +1,48 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:apprentice_staff",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_apprentice_staff"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:apprentice_staff.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": {
+        "value": 3
+      },
+      "minecraft:durability": {
+        "max_durability": 300
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "arc:arcane_shard"
+            ],
+            "repair_amount": 60
+          }
+        ]
+      },
+      "minecraft:enchantable": {
+        "slot": "sword",
+        "value": 12
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:staff"
+        ]
+      }
+    }
+  }
+}

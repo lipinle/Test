@@ -1,0 +1,58 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Arcane Ascension",
+    "description": "มหาเวทข้ามมิติ: คาถา 12 แบบ, มานา+HUD, มิติใหม่ The Rift + ดันเจี้ยนสุ่ม, บอส 2 ตัวพร้อมคัตซีน, หินวาร์ป, รูน, จันทร์สีเลือด, เควส",
+    "uuid": "33e98fe9-f87e-467f-a861-b2328890fdf7",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "aa23d5c6-1984-4759-b28b-a98f6e02dc69",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "8c2d34ef-d65f-417b-bc3a-9b0d1f3664fa",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.2.0"
+    },
+    {
+      "uuid": "013e1876-ad8e-44f1-9d21-a6c4de178c6e",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

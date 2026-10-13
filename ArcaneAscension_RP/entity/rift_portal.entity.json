@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:rift_portal",
+      "materials": {
+        "default": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/arc/rift_portal"
+      },
+      "geometry": {
+        "default": "geometry.arc.rift_portal"
+      },
+      "render_controllers": [
+        "controller.render.arc_fullbright"
+      ],
+      "animations": {
+        "idle": "animation.arc.rift_portal.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      }
+    }
+  }
+}

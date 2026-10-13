@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "arc:apprentice_staff"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:arcane_shard"
+      }
+    ],
+    "pattern": [
+      "  S",
+      " T ",
+      "T  "
+    ],
+    "key": {
+      "S": {
+        "item": "arc:arcane_shard"
+      },
+      "T": {
+        "item": "minecraft:stick"
+      }
+    },
+    "result": {
+      "item": "arc:apprentice_staff",
+      "count": 1
+    }
+  }
+}

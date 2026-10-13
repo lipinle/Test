@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:ember_colossus",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/ember_colossus",
+        "glow": "textures/entity/arc/ember_colossus_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.ember_colossus"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "walk": "animation.arc.ember_colossus.walk",
+        "look": "animation.arc.common.look_at_target",
+        "slam": "animation.arc.ember_colossus.slam",
+        "throw": "animation.arc.ember_colossus.throw",
+        "roar": "animation.arc.ember_colossus.roar"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#2f2624",
+        "overlay_color": "#ff7a1a"
+      }
+    }
+  }
+}

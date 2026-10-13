@@ -1,0 +1,22 @@
+{
+  "format_version": "1.16.100",
+  "minecraft:fog_settings": {
+    "description": {
+      "identifier": "arc:rift"
+    },
+    "distance": {
+      "air": {
+        "fog_start": 0.2,
+        "fog_end": 0.95,
+        "fog_color": "#1a0a2e",
+        "render_distance_type": "render"
+      },
+      "weather": {
+        "fog_start": 0.16000000000000003,
+        "fog_end": 0.76,
+        "fog_color": "#1a0a2e",
+        "render_distance_type": "render"
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:archmage_staff",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_archmage_staff"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:archmage_staff.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": {
+        "value": 6
+      },
+      "minecraft:durability": {
+        "max_durability": 2400
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "arc:arcane_ingot"
+            ],
+            "repair_amount": 600
+          }
+        ]
+      },
+      "minecraft:enchantable": {
+        "slot": "sword",
+        "value": 12
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:staff"
+        ]
+      },
+      "minecraft:glint": true
+    }
+  }
+}

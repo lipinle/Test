@@ -1,0 +1,22 @@
+{
+  "format_version": "1.16.100",
+  "minecraft:fog_settings": {
+    "description": {
+      "identifier": "arc:blood_moon"
+    },
+    "distance": {
+      "air": {
+        "fog_start": 0.05,
+        "fog_end": 0.75,
+        "fog_color": "#5a0a12",
+        "render_distance_type": "render"
+      },
+      "weather": {
+        "fog_start": 0.04000000000000001,
+        "fog_end": 0.6000000000000001,
+        "fog_color": "#5a0a12",
+        "render_distance_type": "render"
+      }
+    }
+  }
+}

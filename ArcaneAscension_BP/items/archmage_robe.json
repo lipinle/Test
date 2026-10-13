@@ -1,0 +1,49 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "arc:archmage_robe",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.chestplate"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "arc_archmage_robe"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.arc:archmage_robe.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:wearable": {
+        "slot": "slot.armor.chest",
+        "protection": 5
+      },
+      "minecraft:durability": {
+        "max_durability": 380
+      },
+      "minecraft:enchantable": {
+        "slot": "armor_torso",
+        "value": 15
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "arc:arcane_ingot"
+            ],
+            "repair_amount": 95
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "arc:archmage"
+        ]
+      }
+    }
+  }
+}

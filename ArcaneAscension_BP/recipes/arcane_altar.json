@@ -1,0 +1,39 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "arc:arcane_altar"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:arcane_ingot"
+      }
+    ],
+    "pattern": [
+      "IBI",
+      "OCO",
+      "OOO"
+    ],
+    "key": {
+      "I": {
+        "item": "arc:arcane_ingot"
+      },
+      "B": {
+        "item": "minecraft:book"
+      },
+      "C": {
+        "item": "arc:arcane_crystal_block"
+      },
+      "O": {
+        "item": "minecraft:obsidian"
+      }
+    },
+    "result": {
+      "item": "arc:arcane_altar",
+      "count": 1
+    }
+  }
+}

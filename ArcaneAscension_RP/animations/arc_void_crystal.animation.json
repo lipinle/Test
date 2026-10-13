@@ -1,0 +1,29 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.arc.void_crystal.idle": {
+      "loop": true,
+      "bones": {
+        "crystal": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 120) * 1.5 + 2",
+            0
+          ],
+          "rotation": [
+            0,
+            "query.life_time * 90",
+            0
+          ]
+        },
+        "shards": {
+          "rotation": [
+            0,
+            "-query.life_time * 140",
+            0
+          ]
+        }
+      }
+    }
+  }
+}

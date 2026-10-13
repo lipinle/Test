@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:crystal_golem",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/crystal_golem",
+        "glow": "textures/entity/arc/crystal_golem_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.crystal_golem"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "walk": "animation.arc.crystal_golem.walk",
+        "idle": "animation.arc.crystal_golem.idle",
+        "look": "animation.arc.common.look_at_target",
+        "attack": "animation.arc.crystal_golem.attack"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "idle",
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#5f687a",
+        "overlay_color": "#b58bff"
+      }
+    }
+  }
+}

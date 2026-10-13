@@ -1,0 +1,54 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:block": {
+    "description": {
+      "identifier": "arc:arcane_altar",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 5.0
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 1200
+      },
+      "minecraft:map_color": "#4a2678",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "arc_arcane_altar",
+          "render_method": "alpha_test"
+        }
+      },
+      "minecraft:light_emission": 9,
+      "arc:altar_interact": {},
+      "minecraft:geometry": "geometry.arc.arcane_altar",
+      "minecraft:light_dampening": 0,
+      "minecraft:collision_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      },
+      "minecraft:selection_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      }
+    }
+  }
+}

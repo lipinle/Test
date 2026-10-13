@@ -1,0 +1,29 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "arc:rift_tiles"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:rift_bricks"
+      }
+    ],
+    "pattern": [
+      "BB",
+      "BB"
+    ],
+    "key": {
+      "B": {
+        "item": "arc:rift_bricks"
+      }
+    },
+    "result": {
+      "item": "arc:rift_tiles",
+      "count": 4
+    }
+  }
+}

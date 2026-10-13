@@ -1,0 +1,45 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "arc:void_titan",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "warden_bioluminescent_layer"
+      },
+      "textures": {
+        "default": "textures/entity/arc/void_titan",
+        "glow": "textures/entity/arc/void_titan_glow"
+      },
+      "geometry": {
+        "default": "geometry.arc.void_titan"
+      },
+      "render_controllers": [
+        "controller.render.arc_default",
+        "controller.render.arc_glow"
+      ],
+      "animations": {
+        "idle": "animation.arc.void_titan.idle",
+        "move": "animation.arc.void_titan.move",
+        "look": "animation.arc.common.look_at_target",
+        "slam": "animation.arc.void_titan.slam",
+        "cast": "animation.arc.void_titan.cast",
+        "laser": "animation.arc.void_titan.laser",
+        "roar": "animation.arc.void_titan.roar"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "move": "query.modified_move_speed > 0.05"
+          },
+          "look"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#1a1030",
+        "overlay_color": "#b44dff"
+      }
+    }
+  }
+}

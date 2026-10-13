@@ -1,0 +1,102 @@
+{
+  "resource_pack_name": "arcane_ascension",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "arc_arcane_shard": {
+      "textures": "textures/items/arc_arcane_shard"
+    },
+    "arc_arcane_ingot": {
+      "textures": "textures/items/arc_arcane_ingot"
+    },
+    "arc_void_essence": {
+      "textures": "textures/items/arc_void_essence"
+    },
+    "arc_ember_core": {
+      "textures": "textures/items/arc_ember_core"
+    },
+    "arc_crystal_heart": {
+      "textures": "textures/items/arc_crystal_heart"
+    },
+    "arc_titan_heart": {
+      "textures": "textures/items/arc_titan_heart"
+    },
+    "arc_mana_potion": {
+      "textures": "textures/items/arc_mana_potion"
+    },
+    "arc_greater_mana_potion": {
+      "textures": "textures/items/arc_greater_mana_potion"
+    },
+    "arc_rift_key": {
+      "textures": "textures/items/arc_rift_key"
+    },
+    "arc_ember_sigil": {
+      "textures": "textures/items/arc_ember_sigil"
+    },
+    "arc_void_sigil": {
+      "textures": "textures/items/arc_void_sigil"
+    },
+    "arc_grimoire": {
+      "textures": "textures/items/arc_grimoire"
+    },
+    "arc_rune_fire": {
+      "textures": "textures/items/arc_rune_fire"
+    },
+    "arc_rune_frost": {
+      "textures": "textures/items/arc_rune_frost"
+    },
+    "arc_rune_storm": {
+      "textures": "textures/items/arc_rune_storm"
+    },
+    "arc_rune_leech": {
+      "textures": "textures/items/arc_rune_leech"
+    },
+    "arc_apprentice_staff": {
+      "textures": "textures/items/arc_apprentice_staff"
+    },
+    "arc_ember_staff": {
+      "textures": "textures/items/arc_ember_staff"
+    },
+    "arc_frost_staff": {
+      "textures": "textures/items/arc_frost_staff"
+    },
+    "arc_storm_staff": {
+      "textures": "textures/items/arc_storm_staff"
+    },
+    "arc_void_staff": {
+      "textures": "textures/items/arc_void_staff"
+    },
+    "arc_archmage_staff": {
+      "textures": "textures/items/arc_archmage_staff"
+    },
+    "arc_runeblade": {
+      "textures": "textures/items/arc_runeblade"
+    },
+    "arc_void_reaver": {
+      "textures": "textures/items/arc_void_reaver"
+    },
+    "arc_archmage_hood": {
+      "textures": "textures/items/arc_archmage_hood"
+    },
+    "arc_archmage_robe": {
+      "textures": "textures/items/arc_archmage_robe"
+    },
+    "arc_archmage_leggings": {
+      "textures": "textures/items/arc_archmage_leggings"
+    },
+    "arc_archmage_boots": {
+      "textures": "textures/items/arc_archmage_boots"
+    },
+    "arc_voidplate_helmet": {
+      "textures": "textures/items/arc_voidplate_helmet"
+    },
+    "arc_voidplate_chestplate": {
+      "textures": "textures/items/arc_voidplate_chestplate"
+    },
+    "arc_voidplate_leggings": {
+      "textures": "textures/items/arc_voidplate_leggings"
+    },
+    "arc_voidplate_boots": {
+      "textures": "textures/items/arc_voidplate_boots"
+    }
+  }
+}

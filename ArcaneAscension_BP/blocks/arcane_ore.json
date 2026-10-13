@@ -1,0 +1,29 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:block": {
+    "description": {
+      "identifier": "arc:arcane_ore",
+      "menu_category": {
+        "category": "nature",
+        "group": "minecraft:itemGroup.name.ore"
+      }
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3.0
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 3
+      },
+      "minecraft:map_color": "#8a4fff",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "arc_arcane_ore",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:light_emission": 4,
+      "minecraft:loot": "loot_tables/blocks/arc_empty.json"
+    }
+  }
+}

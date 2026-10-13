@@ -1,0 +1,37 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "arc:rift_bricks"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "arc:void_essence"
+      }
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:deepslate_bricks"
+      },
+      {
+        "item": "minecraft:deepslate_bricks"
+      },
+      {
+        "item": "minecraft:deepslate_bricks"
+      },
+      {
+        "item": "minecraft:deepslate_bricks"
+      },
+      {
+        "item": "arc:void_essence"
+      }
+    ],
+    "result": {
+      "item": "arc:rift_bricks",
+      "count": 4
+    }
+  }
+}
