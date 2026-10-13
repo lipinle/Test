@@ -2,11 +2,11 @@
   "format_version": 2,
   "header": {
     "name": "Sword Sweep",
-    "description": "ดาบตีกวาดได้เหมือน PC แค่กดตีก็กวาดศัตรูข้างหน้า ไม่ต้องเล็ง",
+    "description": "ดาบตีกวาดได้เหมือน PC แค่ฟันอากาศก็กวาดศัตรู ดาบยิ่งดียิ่งกวาดไกล/กว้าง เนเธอไรท์ฟันรอบตัว",
     "uuid": "f79c473b-309c-40b7-82ff-e6244afded4e",
     "version": [
       1,
-      0,
+      1,
       0
     ],
     "min_engine_version": [
@@ -21,7 +21,7 @@
       "uuid": "35a63fd0-6443-46a1-bafa-c99f58f4fbae",
       "version": [
         1,
-        0,
+        1,
         0
       ]
     },
@@ -32,7 +32,7 @@
       "entry": "scripts/main.js",
       "version": [
         1,
-        0,
+        1,
         0
       ]
     }

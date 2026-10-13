@@ -1,8 +1,6 @@
 import { world, system, EntityDamageCause, EntitySwingSource, EquipmentSlot, GameMode } from "@minecraft/server";
 
 // ===== ตั้งค่า =====
-const SWEEP_RANGE = 3.5; // ระยะกวาด (บล็อก) วัดจากตัวผู้เล่นไปข้างหน้า
-const SWEEP_HALF_ANGLE = 70; // ครึ่งมุมกวาดซ้าย-ขวา (องศา) 70 = กวาดกว้าง 140°
 const SWEEP_HEIGHT = 2.5; // ศัตรูต้องสูง/ต่ำกว่าผู้เล่นไม่เกินนี้
 const SWEEP_DAMAGE_RATIO = 0.5; // ศัตรูตัวรอบข้างโดน 1 + (ดาเมจดาบ x ค่านี้)
 const COOLDOWN_TICKS = 12; // หน่วงระหว่างการกวาด (20 tick = 1 วินาที) ดาบ PC = 0.625 วิ
@@ -10,17 +8,20 @@ const KNOCKBACK = 0.4; // แรงกระเด็นของศัตรู
 const HIT_PLAYERS = false; // true = กวาดโดนผู้เล่นคนอื่นด้วย (PvP)
 const HIT_OWN_PETS = false; // true = กวาดโดนสัตว์เลี้ยงของตัวเองด้วย
 
-// ดาเมจพื้นฐานของดาบ (ค่าตาม Bedrock)
-const SWORD_DAMAGE = {
-  "minecraft:wooden_sword": 5,
-  "minecraft:golden_sword": 5,
-  "minecraft:stone_sword": 6,
-  "minecraft:copper_sword": 6,
-  "minecraft:iron_sword": 7,
-  "minecraft:diamond_sword": 8,
-  "minecraft:netherite_sword": 9,
+// ค่าของดาบแต่ละ tier
+//   damage = ดาเมจพื้นฐาน (ค่าตาม Bedrock)
+//   range  = ระยะกวาด (บล็อก) วัดจากตัวผู้เล่น
+//   angle  = ความกว้างของการกวาด (องศา) 360 = ฟันรอบตัว
+const SWORD_TIERS = {
+  "minecraft:wooden_sword": { damage: 5, range: 3.0, angle: 100 },
+  "minecraft:golden_sword": { damage: 5, range: 3.5, angle: 120 },
+  "minecraft:stone_sword": { damage: 6, range: 3.5, angle: 120 },
+  "minecraft:copper_sword": { damage: 6, range: 4.0, angle: 140 },
+  "minecraft:iron_sword": { damage: 7, range: 4.5, angle: 160 },
+  "minecraft:diamond_sword": { damage: 8, range: 5.0, angle: 200 },
+  "minecraft:netherite_sword": { damage: 9, range: 6.0, angle: 360 },
 };
-const DEFAULT_SWORD_DAMAGE = 6; // ดาบจาก addon อื่นที่ไม่อยู่ในตาราง
+const DEFAULT_TIER = { damage: 6, range: 3.5, angle: 120 }; // ดาบจาก addon อื่นที่ไม่อยู่ในตาราง
 
 // สิ่งที่ไม่ควรโดนกวาด
 const IGNORED_TYPES = new Set([
@@ -55,8 +56,12 @@ function enchantLevel(item, id) {
   }
 }
 
-function attackDamage(player, item) {
-  let damage = SWORD_DAMAGE[item.typeId] ?? DEFAULT_SWORD_DAMAGE;
+function getTier(item) {
+  return SWORD_TIERS[item.typeId] ?? DEFAULT_TIER;
+}
+
+function attackDamage(player, item, tier) {
+  let damage = tier.damage;
   damage += enchantLevel(item, "sharpness") * 1.25;
   const strength = player.getEffect("strength");
   if (strength) damage += 3 * (strength.amplifier + 1);
@@ -78,19 +83,20 @@ function canHit(player, entity) {
   return true;
 }
 
-// หาศัตรูทั้งหมดในรูปพัดด้านหน้าผู้เล่น
-function findTargets(player) {
+// หาศัตรูทั้งหมดในรูปพัดด้านหน้าผู้เล่น (หรือรอบตัวถ้ามุม 360°)
+function findTargets(player, tier) {
   const view = player.getViewDirection();
   const flat = Math.hypot(view.x, view.z);
   // มองขึ้น/ลงตรง ๆ ใช้ทิศที่ตัวหันแทน
   const fx = flat > 0.01 ? view.x / flat : -Math.sin((player.getRotation().y * Math.PI) / 180);
   const fz = flat > 0.01 ? view.z / flat : Math.cos((player.getRotation().y * Math.PI) / 180);
-  const cosLimit = Math.cos((SWEEP_HALF_ANGLE * Math.PI) / 180);
+  const fullCircle = tier.angle >= 360;
+  const cosLimit = Math.cos((tier.angle / 2) * (Math.PI / 180));
   const origin = player.location;
   const head = player.getHeadLocation();
 
   const targets = [];
-  for (const entity of player.dimension.getEntities({ location: origin, maxDistance: SWEEP_RANGE + 1.5 })) {
+  for (const entity of player.dimension.getEntities({ location: origin, maxDistance: tier.range + 1.5 })) {
     if (!canHit(player, entity)) continue;
     const loc = entity.location;
     const dx = loc.x - origin.x;
@@ -99,9 +105,9 @@ function findTargets(player) {
     if (Math.abs(dy) > SWEEP_HEIGHT) continue;
     // หักครึ่งความกว้างตัวมอนโดยประมาณ ให้ตัวใหญ่ ๆ โดนง่ายขึ้น
     const dist = Math.hypot(dx, dz);
-    if (dist - 0.5 > SWEEP_RANGE) continue;
+    if (dist - 0.5 > tier.range) continue;
     // ตัวที่ชิดมาก ๆ ถือว่าอยู่ข้างหน้าเสมอ
-    if (dist > 0.8 && (dx * fx + dz * fz) / dist < cosLimit) continue;
+    if (!fullCircle && dist > 0.8 && (dx * fx + dz * fz) / dist < cosLimit) continue;
 
     // ห้ามตีทะลุกำแพง
     const center = { x: loc.x, y: loc.y + 0.6, z: loc.z };
@@ -147,15 +153,19 @@ function damageSword(player, item) {
   equippable.setEquipment(EquipmentSlot.Mainhand, item);
 }
 
-function playSweepEffect(player, fx, fz, hitSomething) {
+function playSweepEffect(player, tier, fx, fz, hitSomething) {
   const dim = player.dimension;
   const base = player.location;
   const y = base.y + 1.1;
-  // วาดเส้นโค้งเป็นรูปพัดด้านหน้า
+  // วาดเส้นโค้งตามความกว้างของการกวาด (ดาบ 360° วาดเป็นวงรอบตัว)
   const yaw = Math.atan2(fz, fx);
-  for (let i = -3; i <= 3; i++) {
-    const a = yaw + (i / 3) * ((SWEEP_HALF_ANGLE * Math.PI) / 180) * 0.8;
-    const r = 1.8;
+  const fullCircle = tier.angle >= 360;
+  const span = (Math.min(tier.angle, 360) * Math.PI) / 180;
+  const r = Math.max(1.6, tier.range * 0.6);
+  const points = Math.max(5, Math.round(tier.angle / 20));
+  for (let i = 0; i < points; i++) {
+    const t = fullCircle ? i / points : i / (points - 1) - 0.5;
+    const a = yaw + t * span * (fullCircle ? 1 : 0.85);
     try {
       dim.spawnParticle("minecraft:critical_hit_emitter", { x: base.x + Math.cos(a) * r, y, z: base.z + Math.sin(a) * r });
     } catch {}
@@ -174,12 +184,13 @@ function doSweep(player, directHit) {
   const last = lastSweepTick.get(player.id) ?? -Infinity;
   if (now - last < COOLDOWN_TICKS) return;
 
-  const { targets, fx, fz } = findTargets(player);
+  const tier = getTier(item);
+  const { targets, fx, fz } = findTargets(player, tier);
 
   // ถ้าไม่ได้ตีโดนมอนตรง ๆ และบล็อกที่มองอยู่ใกล้กว่ามอนทุกตัว = กำลังขุดบล็อก ไม่กวาด
   if (!directHit) {
     const nearest = targets.reduce((m, t) => Math.min(m, t.dist), Infinity);
-    if (lookedBlockDistance(player) < Math.min(nearest, SWEEP_RANGE + 1)) return;
+    if (lookedBlockDistance(player) < Math.min(nearest, tier.range + 1)) return;
   }
 
   lastSweepTick.set(player.id, now);
@@ -188,7 +199,7 @@ function doSweep(player, directHit) {
   let main = directHit;
   if (!main && targets.length > 0) main = targets.reduce((a, b) => (b.score < a.score ? b : a)).entity;
 
-  const fullDamage = attackDamage(player, item);
+  const fullDamage = attackDamage(player, item, tier);
   const sweepDamage = 1 + fullDamage * SWEEP_DAMAGE_RATIO;
   const fireAspect = enchantLevel(item, "fire_aspect");
   let hitAny = Boolean(directHit);
@@ -214,7 +225,7 @@ function doSweep(player, directHit) {
 
   // เกมลดความทนทานให้เองแล้วตอนตีโดนตรง ๆ
   if (hitAny && !directHit) damageSword(player, getMainhand(player) ?? item);
-  playSweepEffect(player, fx, fz, hitAny);
+  playSweepEffect(player, tier, fx, fz, hitAny);
 }
 
 function queue(player, hitEntity) {
