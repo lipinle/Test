@@ -9,6 +9,7 @@ const PICKUP_DELAY = 20; // หลังกองเพิ่งรวมกั�
 const MERGE_UNSTACKABLES = true; // รวมเครื่องมือ/เกราะ/อาวุธที่เหมือนกันทุกอย่าง (ความทนทาน, เอนชานต์, ชื่อ) ด้วย
 const WARP_EFFECT = true; // แสดงเส้นแสงตอนกองเก่าวาปไปหากองใหม่
 const MAX_EFFECTS_PER_SCAN = 8; // จำกัดจำนวนเอฟเฟกต์ต่อรอบ กันแลค
+const HOLOGRAM_HEIGHT = 0.5; // ความสูงป้ายลอยเหนือตัวไอเท็ม (บล็อก)
 const DIMENSIONS = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 // ห้ามรวม: ของที่มีของข้างในหรือข้อมูลที่สคริปต์อ่านไม่ได้ (รวมแล้วข้อมูลข้างในจะหาย)
@@ -18,9 +19,14 @@ const NEVER_MERGE_UNSTACKABLE = ["shulker_box", "bundle", "filled_map", "written
 const P_COUNT = "ms:count"; // จำนวนทั้งหมดในกอง
 const P_SEEN = "ms:seen"; // จำนวนจริงในตัว entity ตอนสแกนล่าสุด (ใช้ตรวจว่ามีคนเก็บไปบางส่วน)
 const P_BORN = "ms:born"; // เวลาที่เกิดกอง ใช้หาว่ากองไหนใหม่กว่า
+const P_OWNER = "ms:owner"; // (บนป้าย) id ของไอเท็มที่ป้ายนี้แสดงอยู่
+
+const HOLOGRAM = "ms:hologram"; // entity ป้ายลอย: ไม่มีตัว มีแต่ป้ายชื่อที่ขึ้นตลอด
+const ORPHAN_GRACE = 10; // ป้ายที่หาเจ้าของไม่เจอ รอกี่ tick ก่อนลบ (เผื่อกำลังย้ายไปกองใหม่)
 
 const removing = new Map(); // entity.id -> tick: entity ที่สคริปต์ลบเอง ไม่ต้องคืนของ
 const mergedAt = new Map(); // entity.id -> tick ที่เพิ่งมีกองอื่นวาปมารวม
+const orphanSince = new Map(); // hologram.id -> tick ที่เริ่มไม่มีเจ้าของ
 
 // ---------------------------------------------------------------------------
 // ข้อมูลไอเท็ม
@@ -131,7 +137,7 @@ function removeQuietly(entity) {
   }
 }
 
-function absorb(master, other, fx) {
+function absorb(master, other, fx, holograms) {
   const room = MAX_STACK - master.count;
   if (room <= 0) return;
   if (other.count <= room) {
@@ -139,6 +145,11 @@ function absorb(master, other, fx) {
     other.gone = true;
     if (WARP_EFFECT && fx.left-- > 0) warpEffect(master.entity.dimension, other.loc, master.loc);
     removeQuietly(other.entity);
+    const holo = holograms.get(other.entity.id);
+    if (holo) {
+      holograms.delete(other.entity.id);
+      removeQuietly(holo);
+    }
   } else {
     // กองใหม่เกือบเต็ม: ย้ายมาได้เฉพาะส่วนเกินของกองเก่า (ของจริงในตัว entity ย้ายไม่ได้)
     const moved = Math.min(room, other.count - other.real);
@@ -179,13 +190,42 @@ function givePickup(dim, s) {
   }
 }
 
-function save(s) {
+// วางป้ายลอยเหนือกอง คืนค่า false ถ้าสร้างป้ายไม่ได้
+function syncHologram(dim, s, holo, label) {
+  const pos = { x: s.loc.x, y: s.loc.y + HOLOGRAM_HEIGHT, z: s.loc.z };
+  if (!holo?.isValid) {
+    try {
+      holo = dim.spawnEntity(HOLOGRAM, pos);
+    } catch {
+      return false;
+    }
+    holo.setDynamicProperty(P_OWNER, s.entity.id);
+  } else {
+    const h = holo.location;
+    // ย้ายตามเฉพาะตอนไอเท็มขยับ ลดการส่งข้อมูล
+    if (Math.abs(h.x - pos.x) + Math.abs(h.y - pos.y) + Math.abs(h.z - pos.z) > 0.05) holo.teleport(pos);
+  }
+  if (holo.nameTag !== label) holo.nameTag = label;
+  return true;
+}
+
+function save(dim, s, holo) {
   const e = s.entity;
   if (e.getDynamicProperty(P_COUNT) !== s.count) e.setDynamicProperty(P_COUNT, s.count);
   if (e.getDynamicProperty(P_SEEN) !== s.real) e.setDynamicProperty(P_SEEN, s.real);
   if (e.getDynamicProperty(P_BORN) !== s.born) e.setDynamicProperty(P_BORN, s.born);
   const label = makeLabel(s.item, s.count);
-  if (e.nameTag !== label) e.nameTag = label;
+  // มีป้ายลอยแล้ว ตัวไอเท็มไม่ต้องมีชื่อ (กันขึ้นซ้อน 2 ป้ายตอนเล็ง) ถ้าสร้างป้ายไม่ได้ใช้ชื่อไอเท็มแทน
+  const own = syncHologram(dim, s, holo, label) ? "" : label;
+  if (e.nameTag !== own) e.nameTag = own;
+}
+
+function findHolograms(dim, location, maxDistance) {
+  try {
+    return dim.getEntities(location ? { type: HOLOGRAM, location, maxDistance } : { type: HOLOGRAM });
+  } catch {
+    return [];
+  }
 }
 
 function scanDimension(dim, now) {
@@ -212,7 +252,16 @@ function scanDimension(dim, now) {
     if (typeof born !== "number") born = now;
     stacks.push({ entity, item, real, count, born, loc: entity.location, gone: false });
   }
-  if (stacks.length === 0) return;
+
+  // ป้ายทั้งหมดในมิตินี้ จับคู่กับเจ้าของ
+  const holograms = new Map(); // item.id -> hologram
+  const unowned = [];
+  for (const holo of findHolograms(dim)) {
+    if (!holo.isValid || removing.has(holo.id)) continue;
+    const owner = holo.getDynamicProperty(P_OWNER);
+    if (typeof owner === "string" && !holograms.has(owner)) holograms.set(owner, holo);
+    else unowned.push(holo);
+  }
 
   // กองใหม่สุดก่อน: กองเก่าในระยะจะวาปมารวมกับกองใหม่
   stacks.sort((a, b) => b.born - a.born);
@@ -229,17 +278,35 @@ function scanDimension(dim, now) {
       const dz = other.loc.z - master.loc.z;
       if (dx * dx + dy * dy + dz * dz > r2) continue;
       if (!sameItem(master.item, other.item)) continue;
-      absorb(master, other, fx);
+      absorb(master, other, fx, holograms);
       if (master.count >= MAX_STACK) break;
     }
   }
 
+  const used = new Set();
   for (const s of stacks) {
     if (s.gone || !s.entity.isValid) continue;
+    const holo = holograms.get(s.entity.id);
+    if (holo) used.add(holo.id);
     try {
       if (s.count > s.real) givePickup(dim, s);
-      save(s);
+      save(dim, s, holo);
     } catch {}
+  }
+
+  // ป้ายที่ไม่มีกองแล้ว: ลบ (รอสักครู่ก่อน เผื่อกำลังย้ายเจ้าของไปกองที่วางคืน)
+  const tick = system.currentTick;
+  for (const holo of [...holograms.values(), ...unowned]) {
+    if (used.has(holo.id)) {
+      orphanSince.delete(holo.id);
+      continue;
+    }
+    const since = orphanSince.get(holo.id);
+    if (since === undefined) orphanSince.set(holo.id, tick);
+    else if (tick - since >= ORPHAN_GRACE) {
+      orphanSince.delete(holo.id);
+      removeQuietly(holo);
+    }
   }
 }
 
@@ -252,6 +319,7 @@ system.runInterval(() => {
   const tick = system.currentTick;
   for (const [id, t] of removing) if (tick - t > 100) removing.delete(id);
   for (const [id, t] of mergedAt) if (tick - t > PICKUP_DELAY) mergedAt.delete(id);
+  for (const [id, t] of orphanSince) if (tick - t > 200) orphanSince.delete(id);
 }, SCAN_INTERVAL);
 
 // ---------------------------------------------------------------------------
@@ -267,7 +335,8 @@ function isHazard(block) {
 // มีอะไรมาเอาไอเท็มไปหรือไม่ (ผู้เล่น, มอบ, ไอเท็มชิ้นอื่น, ฮอปเปอร์)
 // ถ้าไม่มีอะไรอยู่ใกล้เลย = หมดเวลา/ถูก /kill/ chunk ถูก unload → ไม่คืนของ เหมือนเกมปกติ และกันของซ้ำ
 function somethingTookIt(dim, loc) {
-  if (dim.getEntities({ location: loc, maxDistance: 2.5 }).length > 0) return true;
+  // ไม่นับป้ายลอยของเราเอง (มันอยู่ข้างกองตลอด)
+  if (dim.getEntities({ location: loc, maxDistance: 2.5 }).some((e) => e.typeId !== HOLOGRAM)) return true;
   for (const dy of [0, -1]) {
     try {
       if (dim.getBlock({ x: loc.x, y: loc.y + dy, z: loc.z })?.typeId === "minecraft:hopper") return true;
@@ -281,9 +350,9 @@ function respawnRemainder(dim, loc, template, remainder, born) {
   try {
     block = dim.getBlock(loc);
   } catch {}
-  if (!block || isHazard(block)) return;
-  if (loc.y < dim.heightRange.min) return;
-  if (!somethingTookIt(dim, loc)) return;
+  if (!block || isHazard(block)) return undefined;
+  if (loc.y < dim.heightRange.min) return undefined;
+  if (!somethingTookIt(dim, loc)) return undefined;
 
   const stack = template.clone();
   stack.amount = Math.min(remainder, stack.maxAmount);
@@ -294,7 +363,18 @@ function respawnRemainder(dim, loc, template, remainder, born) {
   entity.setDynamicProperty(P_COUNT, remainder);
   entity.setDynamicProperty(P_SEEN, stack.amount);
   entity.setDynamicProperty(P_BORN, typeof born === "number" ? born : world.getAbsoluteTime());
-  entity.nameTag = makeLabel(stack, remainder);
+  return entity;
+}
+
+// ไอเท็มหายไปแล้ว: ย้ายป้ายไปให้กองที่วางคืน หรือลบป้ายถ้าไม่มีกองต่อ
+function handOverHologram(dim, loc, oldId, newEntity, remainder) {
+  for (const holo of findHolograms(dim, loc, 4)) {
+    if (holo.getDynamicProperty(P_OWNER) !== oldId) continue;
+    if (newEntity?.isValid) {
+      holo.setDynamicProperty(P_OWNER, newEntity.id);
+      holo.nameTag = makeLabel(readStack(newEntity), remainder);
+    } else removeQuietly(holo);
+  }
 }
 
 world.beforeEvents.entityRemove.subscribe((ev) => {
@@ -304,19 +384,22 @@ world.beforeEvents.entityRemove.subscribe((ev) => {
 
   const count = entity.getDynamicProperty(P_COUNT);
   const seen = entity.getDynamicProperty(P_SEEN);
-  if (typeof count !== "number" || typeof seen !== "number") return;
+  if (typeof count !== "number" || typeof seen !== "number") return; // ยังไม่เคยถูกสแกน = ยังไม่มีป้าย
   // ของจริงในตัวถูกเอาไปหมดแล้ว ที่เหลือคือส่วนเกินที่ต้องวางกลับ
   const remainder = count - seen;
-  if (remainder <= 0) return;
-
-  const template = readStack(entity)?.clone();
-  if (!template) return;
+  const template = remainder > 0 ? readStack(entity)?.clone() : undefined;
+  const oldId = entity.id;
   const dim = entity.dimension;
   const loc = { ...entity.location };
   const born = entity.getDynamicProperty(P_BORN);
+  // ช่วง before event สร้าง/ลบ entity ไม่ได้ ต้องรอ tick ถัดไป
   system.run(() => {
+    let next;
     try {
-      respawnRemainder(dim, loc, template, remainder, born);
+      if (template) next = respawnRemainder(dim, loc, template, remainder, born);
+    } catch {}
+    try {
+      handOverHologram(dim, loc, oldId, next, remainder);
     } catch {}
   });
 });
@@ -339,6 +422,7 @@ system.afterEvents.scriptEventReceive.subscribe((ev) => {
       total += typeof count === "number" ? count : (readStack(entity)?.amount ?? 0);
       if (ev.id === "ms:clear") removeQuietly(entity);
     }
+    if (ev.id === "ms:clear") for (const holo of findHolograms(dim)) removeQuietly(holo);
   }
   const msg =
     ev.id === "ms:clear"

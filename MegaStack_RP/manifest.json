@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mega Stack (Resources)",
+    "description": "ป้ายโฮโลแกรมลอยเหนือกองไอเท็มของ Mega Stack",
+    "uuid": "e6f633fd-fdc1-408f-8fd6-473cac27aaaa",
+    "version": [1, 1, 0],
+    "min_engine_version": [1, 26, 10]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "e9046f70-1f61-4b95-a710-333672bfa252",
+      "version": [1, 1, 0]
+    }
+  ]
+}

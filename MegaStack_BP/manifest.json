@@ -4,27 +4,31 @@
     "name": "Mega Stack",
     "description": "ไอเท็มบนพื้นรวมกองได้สูงสุด 10 ล้านชิ้น แสดงชื่อและจำนวนลอยเหนือกอง กองเก่าในระยะ 9 บล็อกวาปไปรวมกับกองใหม่",
     "uuid": "cad56e37-e185-47bb-ac0d-dbf4489d90f6",
-    "version": [1, 0, 0],
+    "version": [1, 1, 0],
     "min_engine_version": [1, 26, 10]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "a14a71da-a54c-4d50-9cde-e7ee6616c12b",
-      "version": [1, 0, 0]
+      "version": [1, 1, 0]
     },
     {
       "type": "script",
       "language": "javascript",
       "uuid": "47bdadfb-bb1f-4a93-8972-16f653b29186",
       "entry": "scripts/main.js",
-      "version": [1, 0, 0]
+      "version": [1, 1, 0]
     }
   ],
   "dependencies": [
     {
       "module_name": "@minecraft/server",
       "version": "2.5.0"
+    },
+    {
+      "uuid": "e6f633fd-fdc1-408f-8fd6-473cac27aaaa",
+      "version": [1, 1, 0]
     }
   ]
 }
