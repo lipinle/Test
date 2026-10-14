@@ -1,4 +1,6 @@
-import { world, system, ItemStack, StructureSaveMode } from "@minecraft/server";
+import { world, system, BlockTypes, ItemTypes, StructureSaveMode } from "@minecraft/server";
+import { ActionFormData } from "@minecraft/server-ui";
+import { typeIdToDataId, typeIdToID } from "./chest_ui/typeIds.js";
 
 // ===== ตั้งค่า =====
 // ถุงแต่ละระดับ: จำนวนช่องเก็บของทั้งหมด (หน้าละ 45 ช่อง แถวล่างสุดเป็นปุ่ม)
@@ -9,47 +11,54 @@ const BAGS = {
   "bt:bundle_diamond": { tier: 4, slots: 108, name: "ถุงเพชร" },
   "bt:bundle_netherite": { tier: 5, slots: 216, name: "ถุงเนเทอไรท์" },
 };
-const UI_DISTANCE = 2; // ตัวเปิดถุง (มองไม่เห็น) ลอยอยู่หน้าผู้เล่นห่างกี่บล็อก
 const JOIN_DELAY = 60; // หลังเข้าโลก รอกี่ tick ก่อนเปิดถุงได้ (ให้ chunk โหลดเสร็จก่อน)
 const UPGRADE_WINDOW = 6000; // ถุงที่หายจากกระเป๋า (เอาไปวางในโต๊ะคราฟ) จำไว้กี่ tick เพื่อย้ายของไปถุงขั้นถัดไป
-const SWEEP_INTERVAL = 100; // ตรวจหาถุงที่ค้างอยู่ในโลก (เช่น ปิดเกมตอนถือถุง) แล้วบันทึกทุกกี่ tick
+const SWEEP_INTERVAL = 100; // ตรวจหาถุงที่ค้างอยู่ในโลก (เช่น ปิดเกมตอนเปิดถุง) แล้วบันทึกทุกกี่ tick
 const ALLOW_BAG_IN_BAG = false; // ใส่ถุงไว้ในถุงได้ไหม
 // ===================
 
-const UI = "bt:bag_ui"; // entity ที่ผู้เล่นแตะแล้วเปิดหน้าต่างกล่องใหญ่ 54 ช่อง (ลอยหน้าผู้เล่นตอนถือถุง)
-const PAGE = "bt:bag_page"; // entity เก็บของ 1 หน้า (45 ช่อง) อยู่บนเพดานโลกตอนเปิดถุง ที่เหลือเก็บเป็น structure
+const PAGE = "bt:bag_page"; // entity เก็บของ 1 หน้า (45 ช่อง) อยู่ใต้เพดานโลกตอนเปิดถุง ปิดถุงแล้วเก็บเป็น structure
+const OLD_UI = "bt:bag_ui"; // entity หน้าต่างของเวอร์ชัน 1.0.0 (ไม่ใช้แล้ว เหลือไว้เก็บกวาดของที่ค้างในโลก)
 const PER_PAGE = 45;
-const UI_SIZE = 54;
 const SLOT_PREV = 45;
 const SLOT_INFO = 49;
 const SLOT_NEXT = 53;
-const BTN_NEXT = "bt:btn_next";
-const BTN_PREV = "bt:btn_prev";
-const BTN_INFO = "bt:btn_info";
-const BTN_FILL = "bt:btn_fill";
-const BTN_LOCK = "bt:btn_lock";
+const INV_START = 54; // ปุ่มลำดับที่ 54 เป็นต้นไป = ช่องกระเป๋าผู้เล่น 0-35
+const CHEST_54 = "§c§h§e§s§t§5§4§r"; // ธงบอก Chest UI (RP/ui) ให้วาดฟอร์มเป็นกล่องใหญ่ 54 ช่อง
+const ICON = {
+  prev: "textures/items/bt_btn_prev",
+  next: "textures/items/bt_btn_next",
+  info: "textures/items/bt_btn_info",
+  fill: "textures/items/bt_btn_fill",
+  lock: "textures/items/bt_btn_lock",
+  unknown: "textures/items/bt_unknown",
+};
 const P_ID = "bt:id"; // dynamic property บนไอเท็มถุง: รหัสถุง (ใช้ตั้งชื่อ structure ที่เก็บของ)
 const TAG_ID = "bt_id:";
 const TAG_PAGE = "bt_pg:";
-const TAG_OWNER = "bt_owner:";
 const DIMENSIONS = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+// แตะบล็อกพวกนี้ตอนถือถุง = ใช้บล็อกตามปกติ (ไม่เปิดถุง)
+const INTERACTIVE =
+  /chest|barrel|door|gate|button|lever|crafting|furnace|smoker|anvil|table|shulker|hopper|dispenser|dropper|bed|bell|lectern|loom|stonecutter|grindstone|cartography|smithing|brewing|beacon|enchanting|composter|cauldron|jukebox|noteblock|repeater|comparator|daylight|respawn_anchor|lodestone|campfire|sign|frame|cake|candle|beehive|bee_nest|decorated_pot|crafter|vault|command_block|structure|jigsaw/;
 
 let tick = 0;
-const sessions = new Map(); // player.id -> ถุงที่กำลังถืออยู่
+const sessions = new Map(); // player.id -> ถุงที่กำลังเปิดอยู่
 const joinedAt = new Map(); // player.id -> tick ที่เข้าโลก
 const memory = new Map(); // player.id -> { present: Map<id, tier>, vanished: [{ id, tier, at }] }
-const retryAt = new Map(); // player.id -> tick ที่ลองโหลดถุงใหม่ได้ (หลังโหลดไม่สำเร็จ)
+const lastOpen = new Map(); // player.id -> tick ที่กดเปิดล่าสุด (กันเปิดซ้ำ)
 
 // ---------------------------------------------------------------------------
 // เครื่องมือ
 // ---------------------------------------------------------------------------
 
 const isBag = (item) => !!item && item.typeId in BAGS;
-const isButton = (item) => !!item && item.typeId.startsWith("bt:btn_");
 const container = (entity) => entity?.getComponent("minecraft:inventory")?.container;
+const playerInv = (player) => player.getComponent("minecraft:inventory")?.container;
 const structId = (id) => `bt:bag_${id}`;
 const floorVec = (v) => ({ x: Math.floor(v.x), y: Math.floor(v.y), z: Math.floor(v.z) });
 const dist2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
+const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i);
+const alive = (player) => player.isValid && (player.getComponent("minecraft:health")?.currentValue ?? 1) > 0;
 
 function tagValue(entity, prefix) {
   for (const t of entity.getTags()) if (t.startsWith(prefix)) return t.slice(prefix.length);
@@ -99,20 +108,47 @@ function hide(entity) {
   } catch {}
 }
 
-// คืนของให้ผู้เล่น ถ้ากระเป๋าเต็ม (หรือผู้เล่นออกจากโลกแล้ว) วางลงพื้นแทน
-function give(player, item, dim, loc) {
-  let left = item;
-  if (player?.isValid) {
-    left = player.getComponent("minecraft:inventory")?.container?.addItem(item);
-    dim = player.dimension;
-    loc = player.location;
-  }
-  if (left && dim) dim.spawnItem(left, loc);
+function sound(player, id, pitch = 1) {
+  try {
+    player.playSound(id, { pitch, volume: 0.6 });
+  } catch {}
 }
 
-function giveTo(s, item) {
-  const at = s.ui?.isValid ? s.ui : s.pages.find((e) => e?.isValid);
-  give(s.player, item, at?.dimension ?? s.dim, at?.location ?? s.anchor);
+// ย้ายของทั้งกองจาก from[slot] ไปยัง to (เฉพาะช่องใน slots): เติมกองที่ซ้อนได้ก่อน แล้วลงช่องว่าง
+// ช่องว่างใช้ moveItem ข้อมูลไอเท็มจึงตามไปครบ (เอนชานท์ ชื่อ ของในกล่องชัลเกอร์) คืนจำนวนที่ย้ายไม่ได้
+function moveStack(from, slot, to, slots) {
+  const item = from.getItem(slot);
+  if (!item) return 0;
+  let left = item.amount;
+  if (item.maxAmount > 1) {
+    for (const j of slots) {
+      const e = to.getItem(j);
+      if (!e || e.amount >= e.maxAmount || !e.isStackableWith(item)) continue;
+      const add = Math.min(left, e.maxAmount - e.amount);
+      e.amount += add;
+      to.setItem(j, e);
+      left -= add;
+      if (!left) break;
+    }
+  }
+  if (left) {
+    const empty = slots.find((j) => !to.getItem(j));
+    if (empty !== undefined) {
+      if (left === item.amount) {
+        from.moveItem(slot, empty, to);
+        return 0;
+      }
+      item.amount = left;
+      to.setItem(empty, item);
+      left = 0;
+    }
+  }
+  if (!left) from.setItem(slot);
+  else if (left !== item.amount) {
+    item.amount = left;
+    from.setItem(slot, item);
+  }
+  return left;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +156,7 @@ function giveTo(s, item) {
 // ---------------------------------------------------------------------------
 
 function bagLore(typeId) {
-  return [`§r§7ช่องเก็บของ: §f${BAGS[typeId].slots} ช่อง`, "§r§8ถือแล้วแตะหน้าจอ / คลิกขวา เพื่อเปิด"];
+  return [`§r§7ช่องเก็บของ: §f${BAGS[typeId].slots} ช่อง`, "§r§8ถือแล้วกดใช้ (แตะหน้าจอ / คลิกขวา) เพื่อเปิด"];
 }
 
 function getMemory(player) {
@@ -136,7 +172,7 @@ function ensureId(player, inv, slot) {
   const lore = bagLore(item.typeId);
   let id = bagId(item);
   if (id) {
-    if (item.getLore()[0] !== lore[0]) {
+    if (item.getLore()[0] !== lore[0] || item.getLore()[1] !== lore[1]) {
       item.setLore(lore); // ถุงที่อัปเกรดด้วยโต๊ะตีเหล็กจะติดรหัสเดิมมา แค่แก้คำอธิบาย
       inv.setItem(slot, item);
     }
@@ -166,168 +202,194 @@ function ensureId(player, inv, slot) {
 function scanBags(player, inv) {
   const m = getMemory(player);
   const now = new Map();
-  const unassigned = [];
+  const fix = [];
   for (let i = 0; i < inv.size; i++) {
     const item = inv.getItem(i);
     if (!isBag(item)) continue;
     const id = bagId(item);
     if (id) now.set(id, BAGS[item.typeId].tier);
-    else unassigned.push(i);
+    if (!id || item.getLore()[0] !== bagLore(item.typeId)[0]) fix.push(i);
   }
   const cur = cursorItem(player);
   if (isBag(cur) && bagId(cur)) now.set(bagId(cur), BAGS[cur.typeId].tier);
   for (const [id, tier] of m.present) if (!now.has(id)) m.vanished.push({ id, tier, at: tick });
   m.vanished = m.vanished.filter((v) => !now.has(v.id) && tick - v.at < UPGRADE_WINDOW);
   m.present = now;
-  for (const slot of unassigned) ensureId(player, inv, slot);
-  // ถุงที่มีรหัสแล้วแต่คำอธิบายไม่ตรงระดับ (อัปเกรดที่โต๊ะตีเหล็ก)
-  for (let i = 0; i < inv.size; i++) {
-    const item = inv.getItem(i);
-    if (isBag(item) && bagId(item) && item.getLore()[0] !== bagLore(item.typeId)[0]) ensureId(player, inv, i);
-  }
+  for (const slot of fix) ensureId(player, inv, slot);
 }
 
 // ---------------------------------------------------------------------------
-// หน้าต่างถุง: ช่อง 0-44 ของ, แถวล่าง 45-53 ปุ่มกระจกสี
+// หน้าต่างถุง (Chest UI): ช่อง 0-44 ของในถุง, 45-53 ปุ่มกระจกสี, 54-89 กระเป๋าผู้เล่น
 // ---------------------------------------------------------------------------
 
 const pageCap = (s, n = s.page) => Math.max(0, Math.min(PER_PAGE, s.slots - n * PER_PAGE));
 
-function rowType(s, slot) {
-  if (slot === SLOT_PREV) return s.page > 0 ? BTN_PREV : BTN_FILL;
-  if (slot === SLOT_NEXT) return s.page < s.total - 1 ? BTN_NEXT : BTN_FILL;
-  if (slot === SLOT_INFO) return BTN_INFO;
-  return BTN_FILL;
-}
-
-function button(type, name, lore) {
-  const item = new ItemStack(type, 1);
-  item.nameTag = name;
-  if (lore) item.setLore(lore);
-  return item;
-}
-
-function rowItem(s, slot) {
-  const type = rowType(s, slot);
-  if (type === BTN_NEXT) return button(type, "§r§a§lหน้าถัดไป ▶", [`§r§7ไปหน้า ${s.page + 2}/${s.total}`]);
-  if (type === BTN_PREV) return button(type, "§r§c§l◀ หน้าก่อนหน้า", [`§r§7ไปหน้า ${s.page}/${s.total}`]);
-  if (type === BTN_INFO)
-    return button(type, `§r§e§lหน้า ${s.page + 1}/${s.total}`, [
-      `§r§7${BAGS[s.typeId].name}: §f${s.slots} ช่อง`,
-      `§r§7หน้านี้: §f${pageCap(s)} ช่อง`,
-    ]);
-  return button(type, "§r ");
-}
-
-function lockItem(s) {
-  const max = BAGS[s.typeId].tier >= 5;
-  return button(BTN_LOCK, "§r§7ช่องล็อก", [max ? "§r§8ถุงความจุสูงสุดแล้ว" : "§r§8อัปเกรดถุงเพื่อเพิ่มช่อง"]);
-}
-
-// วางปุ่ม/ช่องล็อกให้ถูก คืนค่า +1/-1 ถ้าผู้เล่นกดปุ่มเปลี่ยนหน้า (ปุ่มหายไปจากช่อง)
-function checkLayout(s, force) {
-  const ui = container(s.ui);
-  const cap = pageCap(s);
-  let action = 0;
-  for (let i = 0; i < PER_PAGE; i++) {
-    const item = ui.getItem(i);
-    if (i < cap) {
-      if (!item) continue;
-      if (isButton(item)) ui.setItem(i);
-      else if (!ALLOW_BAG_IN_BAG && isBag(item)) {
-        ui.setItem(i);
-        giveTo(s, item);
-        s.player?.isValid && s.player.onScreenDisplay.setActionBar("§cใส่ถุงไว้ในถุงไม่ได้");
-      }
-    } else if (item?.typeId !== BTN_LOCK) {
-      if (item && !isButton(item)) giveTo(s, item);
-      ui.setItem(i, lockItem(s));
+// ไอเท็มเสริมจาก addon ทุกตัวในโลกทำให้เลข id ไอเท็มเกมเดิม (>= 850) เลื่อนไป ต้องนับเพื่อให้ไอคอนตรง
+let customItemCount;
+function customItems() {
+  if (customItemCount === undefined) {
+    try {
+      const blocks = new Set(BlockTypes.getAll().map((b) => b.id));
+      customItemCount = ItemTypes.getAll().filter((t) => !t.id.startsWith("minecraft:") && !blocks.has(t.id)).length;
+    } catch {
+      customItemCount = 0;
     }
   }
-  for (let slot = PER_PAGE; slot < UI_SIZE; slot++) {
-    const want = rowType(s, slot);
-    const item = ui.getItem(slot);
-    if (!force && item?.typeId === want) continue;
-    if (!force && slot === SLOT_NEXT && want === BTN_NEXT) action = 1;
-    if (!force && slot === SLOT_PREV && want === BTN_PREV) action = -1;
-    if (item && !isButton(item)) giveTo(s, item); // ผู้เล่นสลับของตัวเองลงช่องปุ่ม
-    ui.setItem(slot, rowItem(s, slot));
-  }
-  return action;
+  return customItemCount;
 }
 
-// ย้ายของหน้าปัจจุบันจากหน้าต่างกลับไปเก็บใน entity ของหน้านั้น
-function unloadPage(s) {
-  const ui = container(s.ui);
-  const pg = container(s.pages[s.page]);
-  for (let i = 0; i < PER_PAGE; i++) {
-    const item = ui.getItem(i);
-    if (!item) continue;
-    if (isButton(item)) ui.setItem(i);
-    else if (!ALLOW_BAG_IN_BAG && isBag(item)) {
-      ui.setItem(i);
-      giveTo(s, item);
-    } else if (!pg.getItem(i)) ui.swapItems(i, i, pg);
-    else {
-      ui.setItem(i);
-      stash(s, item);
-    }
-  }
-  for (let slot = PER_PAGE; slot < UI_SIZE; slot++) ui.setItem(slot);
-}
-
-function loadPage(s, n) {
-  const ui = container(s.ui);
-  const pg = container(s.pages[n]);
-  s.page = n;
-  for (let i = 0; i < PER_PAGE; i++) {
-    const old = ui.getItem(i);
-    if (old) {
-      ui.setItem(i);
-      if (!isButton(old)) giveTo(s, old);
-    }
-    if (pg.getItem(i)) ui.swapItems(i, i, pg);
-  }
-  const oldTag = s.ui.getTags().find((t) => t.startsWith(TAG_PAGE));
-  if (oldTag) s.ui.removeTag(oldTag);
-  s.ui.addTag(TAG_PAGE + n);
-  checkLayout(s, true);
-}
-
-function changePage(s, n) {
-  if (n < 0 || n >= s.total || n === s.page) return checkLayout(s, true);
-  unloadPage(s);
-  loadPage(s, n);
+function isEnchanted(item) {
   try {
-    s.player.playSound("item.book.page_turn");
-  } catch {}
-}
-
-// ใส่ของลงช่องว่างช่องแรกของหน้าไหนก็ได้ (ไม่ใส่ในช่องล็อก) เต็มหมดค่อยคืนผู้เล่น
-function stash(s, item) {
-  for (let n = 0; n < s.pages.length; n++) {
-    const c = container(s.pages[n]);
-    if (!c) continue;
-    const cap = pageCap(s, n);
-    for (let i = 0; i < cap; i++) {
-      if (!c.getItem(i)) {
-        c.setItem(i, item);
-        return;
-      }
-    }
+    return (item.getComponent("minecraft:enchantable")?.getEnchantments().length ?? 0) > 0;
+  } catch {
+    return false;
   }
-  giveTo(s, item);
+}
+
+function iconOf(item) {
+  if (isBag(item)) return `textures/items/${item.typeId.replace(":", "_")}`;
+  const id = typeIdToDataId.get(item.typeId) ?? typeIdToID.get(item.typeId);
+  if (id === undefined) return ICON.unknown;
+  return String((id + (id < 850 ? 0 : customItems())) * 65536 + (isEnchanted(item) ? 32768 : 0));
+}
+
+const pad2 = (n) => String(Math.min(Math.max(Math.round(n), 0), 99)).padStart(2, "0");
+const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+// ข้อความปุ่มตามรูปแบบของ Chest UI: stack#จำนวน dur#ความทนทาน แล้วตามด้วยชื่อ/คำอธิบาย
+function slotText(name, lore, amount = 1, dur = 0) {
+  const raw = [{ text: `stack#${pad2(Math.max(amount, 1))}dur#${pad2(dur)}§r` }];
+  if (typeof name === "string") raw.push({ text: `${name}§r` });
+  else raw.push(name, { text: "§r" });
+  for (const line of lore) raw.push({ text: `\n${line}` });
+  return { rawtext: raw };
+}
+
+function itemText(item, hint) {
+  const name = item.nameTag ? `§o${item.nameTag}` : { translate: item.localizationKey };
+  const lore = [];
+  try {
+    for (const e of item.getComponent("minecraft:enchantable")?.getEnchantments() ?? []) {
+      const title = e.type.id.replace(/^minecraft:/, "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      lore.push(`§7${title} ${ROMAN[e.level] ?? e.level}`);
+    }
+  } catch {}
+  lore.push(...item.getLore());
+  if (hint) lore.push(hint);
+  let dur = 0;
+  const d = item.getComponent("minecraft:durability");
+  if (d && d.damage > 0) dur = Math.max(1, ((d.maxDurability - d.damage) / d.maxDurability) * 99);
+  return slotText(name, lore, item.amount, dur);
+}
+
+function rowButton(s, slot) {
+  if (slot === SLOT_PREV && s.page > 0) return { text: slotText("§c§l◀ หน้าก่อนหน้า", [`§7ไปหน้า ${s.page}/${s.total}`]), icon: ICON.prev };
+  if (slot === SLOT_NEXT && s.page < s.total - 1)
+    return { text: slotText("§a§lหน้าถัดไป ▶", [`§7ไปหน้า ${s.page + 2}/${s.total}`]), icon: ICON.next };
+  if (slot === SLOT_INFO)
+    return {
+      text: slotText(`§e§lหน้า ${s.page + 1}/${s.total}`, [
+        `§7${BAGS[s.typeId].name}: §f${s.slots} ช่อง`,
+        `§7หน้านี้: §f${pageCap(s)} ช่อง`,
+        "§8แตะของในถุง = หยิบออก",
+        "§8แตะของในกระเป๋า = ใส่ถุง",
+      ]),
+      icon: ICON.info,
+    };
+  return { text: slotText("§8 ", []), icon: ICON.fill };
+}
+
+function buildForm(s, inv) {
+  const info = BAGS[s.typeId];
+  const form = new ActionFormData().title({ rawtext: [{ text: `${CHEST_54}§8${info.name} §7(${s.page + 1}/${s.total})` }] });
+  const pg = container(s.pages[s.page]);
+  const cap = pageCap(s);
+  const lockLore = info.tier >= 5 ? "§8ถุงความจุสูงสุดแล้ว" : "§8อัปเกรดถุงเพื่อเพิ่มช่อง";
+  for (let i = 0; i < PER_PAGE; i++) {
+    const item = i < cap ? pg.getItem(i) : undefined;
+    if (i >= cap) form.button(slotText("§7ช่องล็อก", [lockLore]), ICON.lock);
+    else if (item) form.button(itemText(item, "§8แตะเพื่อหยิบออก"), iconOf(item));
+    else form.button("");
+  }
+  for (let slot = PER_PAGE; slot < INV_START; slot++) {
+    const b = rowButton(s, slot);
+    form.button(b.text, b.icon);
+  }
+  for (let i = 0; i < 36; i++) {
+    const item = i < inv.size ? inv.getItem(i) : undefined;
+    if (!item) form.button("");
+    else form.button(itemText(item, isBag(item) && !ALLOW_BAG_IN_BAG ? "§cใส่ถุงในถุงไม่ได้" : "§8แตะเพื่อใส่ถุง"), iconOf(item));
+  }
+  return form;
+}
+
+function showBag(s, attempt = 0) {
+  const player = s.player;
+  if (sessions.get(s.playerId) !== s || s.state !== "active") return;
+  if (!alive(player) || s.pages.some((e) => !e?.isValid)) return endSession(s);
+  const inv = playerInv(player);
+  if (!inv) return endSession(s);
+  buildForm(s, inv)
+    .show(player)
+    .then((res) => {
+      if (sessions.get(s.playerId) !== s) return;
+      if (res.canceled) {
+        if (res.cancelationReason === "UserBusy" && attempt < 40) {
+          system.runTimeout(() => showBag(s, attempt + 1), 5);
+          return;
+        }
+        return endSession(s);
+      }
+      if (!alive(player) || s.pages.some((e) => !e?.isValid)) return endSession(s);
+      click(s, res.selection ?? -1);
+      system.run(() => showBag(s));
+    })
+    .catch((err) => {
+      console.warn(`[TieredBundles] form: ${err}`);
+      if (sessions.get(s.playerId) === s) endSession(s);
+    });
+}
+
+function click(s, sel) {
+  const player = s.player;
+  const inv = playerInv(player);
+  if (!inv) return;
+  if (sel >= 0 && sel < PER_PAGE) {
+    // หยิบของออกจากถุง
+    if (sel >= pageCap(s)) return;
+    const pg = container(s.pages[s.page]);
+    if (!pg.getItem(sel)) return;
+    if (moveStack(pg, sel, inv, range(0, inv.size))) player.onScreenDisplay.setActionBar("§cกระเป๋าเต็ม");
+    sound(player, "random.pop", 1.2);
+  } else if (sel === SLOT_PREV && s.page > 0) {
+    s.page--;
+    sound(player, "item.book.page_turn");
+  } else if (sel === SLOT_NEXT && s.page < s.total - 1) {
+    s.page++;
+    sound(player, "item.book.page_turn");
+  } else if (sel >= INV_START && sel - INV_START < inv.size) {
+    // ใส่ของจากกระเป๋าลงถุง: หน้าที่เปิดอยู่ก่อน เต็มแล้วค่อยใส่หน้าอื่น
+    const slot = sel - INV_START;
+    const item = inv.getItem(slot);
+    if (!item) return;
+    if (!ALLOW_BAG_IN_BAG && isBag(item)) {
+      player.onScreenDisplay.setActionBar("§cใส่ถุงไว้ในถุงไม่ได้");
+      return;
+    }
+    const order = [s.page, ...range(0, s.total).filter((n) => n !== s.page)];
+    let left = item.amount;
+    for (const n of order) {
+      left = moveStack(inv, slot, container(s.pages[n]), range(0, pageCap(s, n)));
+      if (!left) break;
+    }
+    if (left) player.onScreenDisplay.setActionBar("§cถุงเต็มแล้ว");
+    sound(player, "random.pop", 0.9);
+  }
 }
 
 // ---------------------------------------------------------------------------
-// เปิด/ปิดถุง
+// เปิด/ปิดถุง: โหลดหน้าจาก structure -> เปิดฟอร์ม -> ปิดฟอร์มแล้วบันทึกกลับ
 // ---------------------------------------------------------------------------
-
-function uiPos(player) {
-  const h = player.getHeadLocation();
-  const d = player.getViewDirection();
-  return { x: h.x + d.x * UI_DISTANCE, y: h.y + d.y * UI_DISTANCE - 0.5, z: h.z + d.z * UI_DISTANCE };
-}
 
 // entity เก็บของอยู่ใต้เพดานโลกตรงหัวผู้เล่น (chunk เดียวกับผู้เล่น จึงโหลดอยู่เสมอ)
 function anchorFor(player, id) {
@@ -346,13 +408,21 @@ function findTagged(id) {
   for (const d of DIMENSIONS) {
     const dim = world.getDimension(d);
     pages.push(...dim.getEntities({ type: PAGE, tags }));
-    uis.push(...dim.getEntities({ type: UI, tags }));
+    uis.push(...dim.getEntities({ type: OLD_UI, tags }));
   }
   return { pages, uis };
 }
 
-function startSession(player, inv) {
-  if ((retryAt.get(player.id) ?? 0) > tick) return;
+function openBag(player) {
+  if (sessions.has(player.id) || !alive(player)) return;
+  if ((lastOpen.get(player.id) ?? -99) + 6 > tick) return;
+  lastOpen.set(player.id, tick);
+  const inv = playerInv(player);
+  if (!inv) return;
+  if (tick - (joinedAt.get(player.id) ?? tick) < JOIN_DELAY) {
+    player.onScreenDisplay.setActionBar("§7กำลังโหลดโลก รอสักครู่แล้วลองเปิดถุงใหม่");
+    return;
+  }
   const slot = player.selectedSlotIndex;
   scanBags(player, inv); // ถุงที่เพิ่งคราฟอัปเกรดลงมือพอดี ต้องรู้ก่อนว่าถุงเก่าเพิ่งหายไป
   const id = ensureId(player, inv, slot);
@@ -375,7 +445,6 @@ function startSession(player, inv) {
     page: 0,
     dim: player.dimension,
     anchor: anchorFor(player, id),
-    ui: undefined,
     pages: [],
     state: "loading",
     since: tick,
@@ -389,7 +458,7 @@ function startSession(player, inv) {
     } catch (err) {
       console.warn(`[TieredBundles] load ${id} failed: ${err}`);
       sessions.delete(player.id);
-      retryAt.set(player.id, tick + 100);
+      player.sendMessage("§c[ถุง] โหลดของในถุงไม่สำเร็จ ลองเปิดใหม่อีกครั้ง");
     }
     return;
   }
@@ -414,55 +483,57 @@ function finishLoad(s, found) {
   }
   for (const e of pages) e.teleport(s.anchor, { dimension: s.dim });
   s.pages = pages;
-  // ของที่ค้างจากรอบก่อน (เช่น ปิดเกมตอนถือถุงอยู่) เทกลับเข้าหน้าของมัน
+  // ของที่ค้างจากรอบก่อน (หน้าซ้ำ / หน้าต่างของเวอร์ชันเก่า) เทกลับเข้าหน้าของมัน
   for (const e of [...extra, ...found.uis]) {
     pourInto(container(e), pages, pageOf(e) ?? 0, s);
     discard(e);
   }
-  const ui = s.dim.spawnEntity(UI, uiPos(s.player));
-  ui.addTag(TAG_ID + s.bagId);
-  ui.addTag(TAG_OWNER + s.playerId);
-  ui.addTag(TAG_PAGE + 0);
-  hide(ui);
-  s.ui = ui;
   s.state = "active";
-  loadPage(s, 0);
-  s.player.onScreenDisplay.setActionBar(`§e${BAGS[s.typeId].name} §7(${s.slots} ช่อง) — แตะหน้าจอ / คลิกขวา เพื่อเปิด`);
+  showBag(s);
 }
 
-// เทของจาก container หนึ่งลงหน้าที่ n (ช่องเดิมถ้าว่าง) ที่เหลือใส่ช่องว่างหน้าอื่น เต็มหมดค่อยวางลงพื้น
+// เทของจาก container หนึ่งลงหน้าที่ n (ช่องเดิมถ้าว่าง) ที่เหลือใส่หน้าอื่น เต็มหมดค่อยคืนผู้เล่น/วางลงพื้น
 function pourInto(from, pages, n, s) {
   if (!from) return;
   const target = container(pages[n]) ?? container(pages[0]);
   const at = pages.find((e) => e?.isValid);
+  const drop = (item) => {
+    if (s?.player.isValid) {
+      const left = playerInv(s.player)?.addItem(item);
+      if (left) s.player.dimension.spawnItem(left, s.player.location);
+    } else at?.dimension.spawnItem(item, at.location);
+  };
   for (let i = 0; i < Math.min(from.size, PER_PAGE); i++) {
     const item = from.getItem(i);
     if (!item) continue;
-    from.setItem(i);
-    if (isButton(item)) continue;
+    if (item.typeId.startsWith("bt:btn_")) {
+      from.setItem(i);
+      continue;
+    }
     if (!ALLOW_BAG_IN_BAG && isBag(item)) {
-      if (s) giveTo(s, item);
-      else at?.dimension.spawnItem(item, at.location);
+      from.setItem(i);
+      drop(item);
       continue;
     }
-    if (target && !target.getItem(i)) {
-      target.setItem(i, item);
+    if (target && i < target.size && !target.getItem(i)) {
+      from.moveItem(i, i, target);
       continue;
     }
-    let left = item;
+    let left = item.amount;
     for (const p of pages) {
-      left = container(p)?.addItem(left);
+      const c = container(p);
+      if (c) left = moveStack(from, i, c, range(0, c.size));
       if (!left) break;
     }
     if (left) {
-      if (s) giveTo(s, left);
-      else at?.dimension.spawnItem(left, at.location);
+      const rest = from.getItem(i);
+      from.setItem(i);
+      if (rest) drop(rest);
     }
   }
 }
 
 function updateSession(s) {
-  const player = s.player;
   if (s.state === "placing") {
     const found = findTagged(s.bagId);
     if (found.pages.length) {
@@ -470,47 +541,28 @@ function updateSession(s) {
       finishLoad(s, found);
     } else if (tick - s.since > 100) {
       sessions.delete(s.playerId);
-      retryAt.set(s.playerId, tick + 100);
-      player.sendMessage("§c[ถุง] โหลดของในถุงไม่สำเร็จ จะลองใหม่อีกครั้ง");
+      s.player.sendMessage("§c[ถุง] โหลดของในถุงไม่สำเร็จ ลองเปิดใหม่อีกครั้ง");
     }
     return;
   }
-  if (s.pages.some((e) => !e?.isValid)) return abortSession(s);
-  if (!s.ui?.isValid) {
-    // ตัวเปิดถุงหายไป (โดนคำสั่ง /kill) สร้างใหม่ ของหน้านี้หล่นอยู่ที่พื้นแล้ว
-    s.ui = s.dim.spawnEntity(UI, uiPos(player));
-    s.ui.addTag(TAG_ID + s.bagId);
-    s.ui.addTag(TAG_OWNER + s.playerId);
-    s.ui.addTag(TAG_PAGE + s.page);
-    hide(s.ui);
-    checkLayout(s, true);
-  }
-  const pos = uiPos(player);
-  if (dist2(pos, s.ui.location) > 0.09) s.ui.teleport(pos);
-  const a = anchorFor(player, s.bagId);
+  if (s.state !== "active") return;
+  const a = anchorFor(s.player, s.bagId);
   if (a.x !== s.anchor.x || a.z !== s.anchor.z) {
     s.anchor = a;
-    for (const e of s.pages) e.teleport(a);
+    for (const e of s.pages) if (e?.isValid) e.teleport(a);
   }
-  const action = checkLayout(s, false);
-  if (action) changePage(s, s.page + action);
 }
 
 function endSession(s) {
-  sessions.delete(s.playerId);
+  if (sessions.get(s.playerId) === s) sessions.delete(s.playerId);
   if (s.state !== "active") return;
-  if (s.pages.some((e) => !e?.isValid)) return abortSession(s);
-  if (s.ui?.isValid) {
-    unloadPage(s);
-    discard(s.ui);
+  s.state = "closed";
+  if (s.pages.some((e) => !e?.isValid)) {
+    // มีบางหน้าหลุดโหลด: ไม่บันทึกทับ ปล่อยให้รอบตรวจ (sweep) บันทึกตอนโหลดกลับมา
+    console.warn(`[TieredBundles] bag ${s.bagId}: page entity unloaded, saving deferred`);
+    return;
   }
   savePages(s.bagId, s.pages);
-}
-
-// มีบางหน้าหลุดโหลด: ไม่บันทึกทับ ปล่อย entity ที่เหลือไว้ให้รอบตรวจ (sweep) จัดการตอนโหลดกลับมา
-function abortSession(s) {
-  sessions.delete(s.playerId);
-  console.warn(`[TieredBundles] bag ${s.bagId}: page entity unloaded, saving deferred`);
 }
 
 // บันทึกทุกหน้าเป็น structure ในโลก (เก็บข้อมูลไอเท็มครบ: เอนชานท์ ชื่อ ของในกล่อง ฯลฯ) แล้วลบ entity
@@ -549,17 +601,14 @@ function removeForeignCopies(s) {
   }
 }
 
-// entity ของถุงที่ไม่มีใครถืออยู่ (เกมปิดกลางคัน, /reload) → บันทึกแล้วลบ
+// entity ของถุงที่ไม่มีใครเปิดอยู่ (เกมปิดกลางคัน, /reload, ของจากเวอร์ชันเก่า) → บันทึกแล้วลบ
 function sweep() {
   const live = new Set();
-  for (const s of sessions.values()) {
-    if (s.ui?.isValid) live.add(s.ui.id);
-    for (const e of s.pages) if (e?.isValid) live.add(e.id);
-  }
+  for (const s of sessions.values()) for (const e of s.pages) if (e?.isValid) live.add(e.id);
   const groups = new Map();
   for (const d of DIMENSIONS) {
     const dim = world.getDimension(d);
-    for (const type of [UI, PAGE]) {
+    for (const type of [OLD_UI, PAGE]) {
       for (const e of dim.getEntities({ type })) {
         if (live.has(e.id)) continue;
         const id = tagValue(e, TAG_ID);
@@ -569,7 +618,7 @@ function sweep() {
         }
         let g = groups.get(id);
         if (!g) groups.set(id, (g = { pages: [], uis: [] }));
-        (type === UI ? g.uis : g.pages).push(e);
+        (type === OLD_UI ? g.uis : g.pages).push(e);
       }
     }
   }
@@ -581,12 +630,12 @@ function sweep() {
       continue;
     }
     if (!g.pages.length) {
-      // หาหน้าไม่เจอ (อยู่ใน chunk ที่ไม่ได้โหลด) วางของในหน้าต่างลงพื้นตรงนั้น
+      // หาหน้าไม่เจอ (อยู่ใน chunk ที่ไม่ได้โหลด) วางของลงพื้นตรงนั้น
       for (const u of g.uis) {
         const c = container(u);
         for (let i = 0; c && i < PER_PAGE; i++) {
           const item = c.getItem(i);
-          if (item && !isButton(item)) u.dimension.spawnItem(item, u.location);
+          if (item && !item.typeId.startsWith("bt:btn_")) u.dimension.spawnItem(item, u.location);
         }
         discard(u);
       }
@@ -609,27 +658,25 @@ function sweep() {
 }
 
 // ---------------------------------------------------------------------------
-// ปุ่มกระจกห้ามหลุดออกจากหน้าต่าง
+// เหตุการณ์
 // ---------------------------------------------------------------------------
 
-function purgeButtons(player, inv) {
-  for (let i = 0; i < inv.size; i++) if (isButton(inv.getItem(i))) inv.setItem(i);
-  try {
-    const cur = player.getComponent("minecraft:cursor_inventory");
-    if (isButton(cur?.item)) cur.clear();
-  } catch {}
-}
-
-world.afterEvents.entitySpawn.subscribe(({ entity }) => {
-  if (!entity.isValid || entity.typeId !== "minecraft:item") return;
-  if (isButton(entity.getComponent("minecraft:item")?.itemStack)) entity.remove();
+// กดใช้ถุง (แตะหน้าจอ / คลิกขวา) = เปิดถุง
+world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
+  if (source?.typeId === "minecraft:player" && isBag(itemStack)) openBag(source);
 });
 
-// เปิดได้เฉพาะถุงของตัวเอง หน้าเก็บของบนเพดานโลกห้ามเปิดตรง ๆ
+// กดใช้ตอนเล็งบล็อก บางครั้งเกมไม่ส่ง itemUse -> ดักตรงนี้ด้วย (ยกเว้นบล็อกที่ใช้งานได้ เช่น หีบ ประตู)
+world.beforeEvents.playerInteractWithBlock.subscribe((ev) => {
+  if (!ev.isFirstEvent || !isBag(ev.itemStack) || INTERACTIVE.test(ev.block.typeId)) return;
+  ev.cancel = true; // ไม่ให้วางของ/ใช้บล็อกตอนกดเปิดถุง
+  const player = ev.player;
+  system.run(() => player.isValid && openBag(player));
+});
+
+// หน้าเก็บของบนเพดานโลกห้ามเปิดตรง ๆ
 world.beforeEvents.playerInteractWithEntity.subscribe((ev) => {
-  const t = ev.target;
-  if (t.typeId === PAGE) ev.cancel = true;
-  else if (t.typeId === UI && sessions.get(ev.player.id)?.ui?.id !== t.id) ev.cancel = true;
+  if (ev.target.typeId === PAGE || ev.target.typeId === OLD_UI) ev.cancel = true;
 });
 
 world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
@@ -641,38 +688,23 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   if (s) endSession(s);
   joinedAt.delete(playerId);
   memory.delete(playerId);
-  retryAt.delete(playerId);
+  lastOpen.delete(playerId);
 });
 
 // ---------------------------------------------------------------------------
 // ลูปหลัก
 // ---------------------------------------------------------------------------
 
-function handlePlayer(player) {
-  const inv = player.getComponent("minecraft:inventory")?.container;
-  if (!inv) return;
-  if (!joinedAt.has(player.id)) joinedAt.set(player.id, tick);
-  if (tick % 5 === 0) scanBags(player, inv);
-
-  const held = inv.getItem(player.selectedSlotIndex);
-  const heldId = isBag(held) ? bagId(held) : undefined;
-  const alive = (player.getComponent("minecraft:health")?.currentValue ?? 1) > 0;
-  let s = sessions.get(player.id);
-  if (s && (!alive || heldId !== s.bagId || held.typeId !== s.typeId || player.dimension.id !== s.dim.id)) {
-    endSession(s);
-    s = undefined;
-  }
-  if (s) updateSession(s);
-  else if (alive && isBag(held) && tick - joinedAt.get(player.id) >= JOIN_DELAY) startSession(player, inv);
-
-  if (sessions.has(player.id) || tick % 20 === 0) purgeButtons(player, inv);
-}
-
 system.runInterval(() => {
   tick++;
   for (const player of world.getAllPlayers()) {
     try {
-      handlePlayer(player);
+      if (!joinedAt.has(player.id)) joinedAt.set(player.id, tick);
+      const inv = playerInv(player);
+      if (inv && tick % 5 === 0) scanBags(player, inv);
+      const s = sessions.get(player.id);
+      if (s && (!alive(player) || player.dimension.id !== s.dim.id)) endSession(s);
+      else if (s) updateSession(s);
     } catch (err) {
       console.warn(`[TieredBundles] ${err}`);
     }
