@@ -1,0 +1,8 @@
+item.hammers:wooden_hammer.name=Wooden Hammer
+item.hammers:stone_hammer.name=Stone Hammer
+item.hammers:iron_hammer.name=Iron Hammer
+item.hammers:golden_hammer.name=Golden Hammer
+item.hammers:diamond_hammer.name=Diamond Hammer
+item.hammers:netherite_hammer.name=Netherite Hammer
+pack.name=Mining Hammers
+pack.description=Hammers that mine 3x3 (Netherite: 5x5)

@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "hammers:diamond_hammer"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "context": "AlwaysUnlocked"
+      }
+    ],
+    "pattern": [
+      "MMM",
+      "MSM",
+      " S "
+    ],
+    "key": {
+      "M": {
+        "item": "minecraft:diamond"
+      },
+      "S": {
+        "item": "minecraft:stick"
+      }
+    },
+    "result": {
+      "item": "hammers:diamond_hammer",
+      "count": 1
+    }
+  }
+}

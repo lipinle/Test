@@ -1,0 +1,82 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "hammers:wooden_hammer",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.pickaxe"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "hammers_wooden_hammer"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.hammers:wooden_hammer.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": {
+        "value": 3
+      },
+      "minecraft:durability": {
+        "max_durability": 180
+      },
+      "minecraft:enchantable": {
+        "slot": "pickaxe",
+        "value": 15
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:oak_planks",
+              "minecraft:spruce_planks",
+              "minecraft:birch_planks",
+              "minecraft:jungle_planks",
+              "minecraft:acacia_planks",
+              "minecraft:dark_oak_planks",
+              "minecraft:mangrove_planks",
+              "minecraft:cherry_planks",
+              "minecraft:pale_oak_planks",
+              "minecraft:bamboo_planks",
+              "minecraft:crimson_planks",
+              "minecraft:warped_planks"
+            ],
+            "repair_amount": 45
+          },
+          {
+            "items": [
+              "hammers:wooden_hammer"
+            ],
+            "repair_amount": "context.other->query.remaining_durability + 0.12 * context.other->query.max_durability"
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "minecraft:is_pickaxe",
+          "minecraft:is_tool",
+          "minecraft:wooden_tier"
+        ]
+      },
+      "minecraft:digger": {
+        "use_efficiency": true,
+        "destroy_speeds": [
+          {
+            "block": {
+              "tags": "query.any_tag('minecraft:is_pickaxe_item_destructible', 'stone', 'metal', 'rail')"
+            },
+            "speed": 2
+          }
+        ]
+      },
+      "minecraft:fuel": {
+        "duration": 10
+      }
+    }
+  }
+}

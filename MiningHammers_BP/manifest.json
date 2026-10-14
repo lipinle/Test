@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mining Hammers",
+    "description": "ค้อนขุด 3x3 (เนเทอไรท์ 5x5) 6 ระดับ: ไม้ หิน เหล็ก ทอง เพชร เนเทอไรท์ ใส่เอนชานท์ได้เหมือนพิกแอ็กซ์",
+    "uuid": "183d6970-3929-4e65-a5ef-027effa503dd",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "31a19dd5-5675-40da-a42d-61812cd583cf",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "ffec48bb-fb15-4dc5-bf72-36182e6b6ceb",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "uuid": "9287bf0d-0b94-4a05-a15a-a848eaec040d",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

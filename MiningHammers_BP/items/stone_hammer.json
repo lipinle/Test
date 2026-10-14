@@ -1,0 +1,71 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "hammers:stone_hammer",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.pickaxe"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "hammers_stone_hammer"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.hammers:stone_hammer.name"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": {
+        "value": 4
+      },
+      "minecraft:durability": {
+        "max_durability": 400
+      },
+      "minecraft:enchantable": {
+        "slot": "pickaxe",
+        "value": 5
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:cobblestone",
+              "minecraft:cobbled_deepslate",
+              "minecraft:blackstone"
+            ],
+            "repair_amount": 100
+          },
+          {
+            "items": [
+              "hammers:stone_hammer"
+            ],
+            "repair_amount": "context.other->query.remaining_durability + 0.12 * context.other->query.max_durability"
+          }
+        ]
+      },
+      "minecraft:tags": {
+        "tags": [
+          "minecraft:is_pickaxe",
+          "minecraft:is_tool",
+          "minecraft:wooden_tier",
+          "minecraft:stone_tier"
+        ]
+      },
+      "minecraft:digger": {
+        "use_efficiency": true,
+        "destroy_speeds": [
+          {
+            "block": {
+              "tags": "query.any_tag('minecraft:is_pickaxe_item_destructible', 'stone', 'metal', 'rail')"
+            },
+            "speed": 3
+          }
+        ]
+      }
+    }
+  }
+}

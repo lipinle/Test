@@ -1,0 +1,24 @@
+{
+  "resource_pack_name": "mining_hammers",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "hammers_wooden_hammer": {
+      "textures": "textures/items/hammers_wooden_hammer"
+    },
+    "hammers_stone_hammer": {
+      "textures": "textures/items/hammers_stone_hammer"
+    },
+    "hammers_iron_hammer": {
+      "textures": "textures/items/hammers_iron_hammer"
+    },
+    "hammers_golden_hammer": {
+      "textures": "textures/items/hammers_golden_hammer"
+    },
+    "hammers_diamond_hammer": {
+      "textures": "textures/items/hammers_diamond_hammer"
+    },
+    "hammers_netherite_hammer": {
+      "textures": "textures/items/hammers_netherite_hammer"
+    }
+  }
+}
