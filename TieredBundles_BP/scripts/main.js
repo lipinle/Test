@@ -21,7 +21,9 @@ const PAGE = "bt:bag_page"; // entity เก็บของ 1 หน้า (45 �
 const OLD_UI = "bt:bag_ui"; // entity หน้าต่างของเวอร์ชัน 1.0.0 (ไม่ใช้แล้ว เหลือไว้เก็บกวาดของที่ค้างในโลก)
 const PER_PAGE = 45;
 const SLOT_PREV = 45;
+const SLOT_DEPOSIT_ALL = 47; // ใส่ของในกระเป๋าทั้งหมด (ไม่รวมฮอตบาร์)
 const SLOT_INFO = 49;
+const SLOT_TAKE_ALL = 51; // หยิบของในหน้านี้ออกทั้งหมด
 const SLOT_NEXT = 53;
 const INV_START = 54; // ปุ่มลำดับที่ 54 เป็นต้นไป = ช่องกระเป๋าผู้เล่น 0-35
 const CHEST_54 = "§c§h§e§s§t§5§4§r"; // ธงบอก Chest UI (RP/ui) ให้วาดฟอร์มเป็นกล่องใหญ่ 54 ช่อง
@@ -31,6 +33,8 @@ const ICON = {
   info: "textures/items/bt_btn_info",
   fill: "textures/items/bt_btn_fill",
   lock: "textures/items/bt_btn_lock",
+  deposit: "textures/items/bt_btn_deposit",
+  take: "textures/items/bt_btn_take",
   unknown: "textures/items/bt_unknown",
 };
 const P_ID = "bt:id"; // dynamic property บนไอเท็มถุง: รหัสถุง (ใช้ตั้งชื่อ structure ที่เก็บของ)
@@ -286,6 +290,10 @@ function rowButton(s, slot) {
   if (slot === SLOT_PREV && s.page > 0) return { text: slotText("§c§l◀ หน้าก่อนหน้า", [`§7ไปหน้า ${s.page}/${s.total}`]), icon: ICON.prev };
   if (slot === SLOT_NEXT && s.page < s.total - 1)
     return { text: slotText("§a§lหน้าถัดไป ▶", [`§7ไปหน้า ${s.page + 2}/${s.total}`]), icon: ICON.next };
+  if (slot === SLOT_DEPOSIT_ALL)
+    return { text: slotText("§b§lใส่ของทั้งหมด", ["§7ย้ายของในกระเป๋าลงถุง", "§8(ไม่รวมฮอตบาร์)"]), icon: ICON.deposit };
+  if (slot === SLOT_TAKE_ALL)
+    return { text: slotText("§6§lหยิบออกทั้งหมด", ["§7ย้ายของหน้านี้ลงกระเป๋า"]), icon: ICON.take };
   if (slot === SLOT_INFO)
     return {
       text: slotText(`§e§lหน้า ${s.page + 1}/${s.total}`, [
@@ -341,7 +349,12 @@ function showBag(s, attempt = 0) {
         return endSession(s);
       }
       if (!alive(player) || s.pages.some((e) => !e?.isValid)) return endSession(s);
-      click(s, res.selection ?? -1);
+      try {
+        click(s, res.selection ?? -1);
+      } catch (err) {
+        console.warn(`[TieredBundles] click ${res.selection}: ${err}`);
+        player.sendMessage(`§c[ถุง] เกิดข้อผิดพลาด: ${err}`);
+      }
       system.run(() => showBag(s));
     })
     .catch((err) => {
@@ -368,23 +381,45 @@ function click(s, sel) {
     s.page++;
     sound(player, "item.book.page_turn");
   } else if (sel >= INV_START && sel - INV_START < inv.size) {
-    // ใส่ของจากกระเป๋าลงถุง: หน้าที่เปิดอยู่ก่อน เต็มแล้วค่อยใส่หน้าอื่น
-    const slot = sel - INV_START;
-    const item = inv.getItem(slot);
+    // แตะของในกระเป๋า = ใส่ลงถุง
+    const item = inv.getItem(sel - INV_START);
     if (!item) return;
     if (!ALLOW_BAG_IN_BAG && isBag(item)) {
       player.onScreenDisplay.setActionBar("§cใส่ถุงไว้ในถุงไม่ได้");
       return;
     }
-    const order = [s.page, ...range(0, s.total).filter((n) => n !== s.page)];
-    let left = item.amount;
-    for (const n of order) {
-      left = moveStack(inv, slot, container(s.pages[n]), range(0, pageCap(s, n)));
-      if (!left) break;
-    }
-    if (left) player.onScreenDisplay.setActionBar("§cถุงเต็มแล้ว");
+    if (deposit(s, inv, sel - INV_START)) player.onScreenDisplay.setActionBar("§cถุงเต็มแล้ว");
     sound(player, "random.pop", 0.9);
+  } else if (sel === SLOT_DEPOSIT_ALL) {
+    let full = false;
+    let moved = 0;
+    for (let i = 9; i < inv.size; i++) {
+      const item = inv.getItem(i);
+      if (!item || (!ALLOW_BAG_IN_BAG && isBag(item))) continue;
+      const left = deposit(s, inv, i);
+      if (left < item.amount) moved++;
+      if (left) full = true;
+    }
+    player.onScreenDisplay.setActionBar(full ? "§cถุงเต็มแล้ว ใส่ได้ไม่หมด" : moved ? `§aใส่ของลงถุงแล้ว ${moved} กอง` : "§7ไม่มีของในกระเป๋า (นอกฮอตบาร์)");
+    sound(player, "random.pop", 0.9);
+  } else if (sel === SLOT_TAKE_ALL) {
+    const pg = container(s.pages[s.page]);
+    let full = false;
+    for (let i = 0; i < pageCap(s); i++) if (pg.getItem(i) && moveStack(pg, i, inv, range(0, inv.size))) full = true;
+    if (full) player.onScreenDisplay.setActionBar("§cกระเป๋าเต็ม");
+    sound(player, "random.pop", 1.2);
   }
+}
+
+// ใส่ของจากกระเป๋าช่อง slot ลงถุง: หน้าที่เปิดอยู่ก่อน เต็มแล้วค่อยใส่หน้าอื่น คืนจำนวนที่ใส่ไม่ได้
+function deposit(s, inv, slot) {
+  const order = [s.page, ...range(0, s.total).filter((n) => n !== s.page)];
+  let left = inv.getItem(slot)?.amount ?? 0;
+  for (const n of order) {
+    if (!left) break;
+    left = moveStack(inv, slot, container(s.pages[n]), range(0, pageCap(s, n)));
+  }
+  return left;
 }
 
 // ---------------------------------------------------------------------------

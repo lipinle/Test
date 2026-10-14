@@ -294,31 +294,28 @@
             }
         ]
     },
+    // TieredBundles: ใช้ปุ่มแบบเดียวกับช่องในกล่อง (ของเดิม map ปุ่มกลับด้าน ทำให้แตะของในกระเป๋าแล้วไม่ส่งผล)
     "inventory_item@common.button": {
         "$pressed_button_name": "button.form_button_click",
-        "button_mappings": [
+        "bindings": [
             {
-                "from_button_id": "$pressed_button_name",
-                "to_button_id": "any",
-                "mapping_type": "pressed"
+                "binding_name": "#null",
+                "binding_type": "collection",
+                "binding_condition": "none",
+                "binding_collection_name": "form_buttons"
             },
             {
-                "from_button_id": "$pressed_button_name",
-                "to_button_id": "any",
-                "mapping_type": "focused"
-            }
-        ],
-        "bindings": [
+                "binding_name": "#null",
+                "binding_type": "collection_details",
+                "binding_collection_name": "form_buttons"
+            },
             {
                 "binding_name": "#form_button_text",
                 "binding_type": "collection",
                 "binding_collection_name": "form_buttons"
             },
             {
-                "binding_type": "collection_details",
-                "binding_collection_name": "form_buttons"
-            },
-            {
+                "binding_name": "#null",
                 "binding_type": "view",
                 "source_property_name": "(not (#form_button_text = ''))",
                 "target_property_name": "#visible"
