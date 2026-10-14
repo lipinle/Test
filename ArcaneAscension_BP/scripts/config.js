@@ -197,13 +197,25 @@ export const BLOOD_MOON_RANDOM = 0.08; // หรือสุ่มโอกา�
 export const BLOOD_MOON_MOBS = ["minecraft:zombie", "minecraft:skeleton", "minecraft:spider", "minecraft:husk", "arc:void_wraith", "minecraft:creeper"];
 export const BLOOD_MOON_MAX_PER_PLAYER = 10;
 
+// ---------- แร่อาร์เคน (หาง่ายขึ้น) ----------
+export const ORE_VEIN_INTERVAL = 200; // ทุกกี่ tick สายแร่จะงอกในผนังถ้ำรอบผู้เล่นที่อยู่ใต้ดิน (200 = 10 วินาที)
+export const ORE_VEIN_CHANCE = 0.6; // โอกาสงอกต่อรอบ
+export const ORE_VEIN_RADIUS = 10; // ระยะรอบตัวผู้เล่น
+export const ORE_VEIN_MAX_NEARBY = 12; // ถ้ามีแร่อยู่แถวนั้นเกินนี้แล้วจะไม่งอกเพิ่ม
+export const ORE_SHARDS = [2, 4]; // เศษผลึกต่อแร่ 1 ก้อน (+Fortune อีกเลเวลละ 0-2)
+export const STONE_SHARD_CHANCE = 0.01; // ขุดหิน/ดีปสเลตด้วยอีเต้อ มีโอกาสได้เศษผลึก
+export const AMETHYST_SHARD_CHANCE = 0.5; // ทุบกระจุกอเมทิสต์
+export const ORE_SENSE_RADIUS = 20; // สัมผัสพลังเวท (ย่อตัว + ใช้คัมภีร์) หาแร่ในระยะนี้
+export const ORE_SENSE_MANA = 10;
+export const ORE_SENSE_COOLDOWN = 200;
+
 // ---------- อื่น ๆ ----------
 export const WAYSTONE_MANA_COST = 20;
 export const DAMAGE_TEXT_MAX = 40;
 export const PROJECTILE_MAX = 80;
 
 export const DEFAULT_SETTINGS = { hud: true, glyph: true, dmg: true, cine: true, shake: true };
-export const DEFAULT_WORLD = { bloodMoon: true, pvp: false, realLightning: false };
+export const DEFAULT_WORLD = { bloodMoon: true, pvp: false, realLightning: false, riftSky: false };
 
 // ไอคอนฟอนต์ (RP/font/glyph_E5.png)
 export const G = {

@@ -56,7 +56,12 @@ export function cooldownTicks(d, spellId) {
 // ---------- ร่ายเวท ----------
 export function tryCast(player, item) {
   const d = getData(player);
-  const spellId = d.loadout[d.sel] ?? d.loadout.find(Boolean);
+  if (!d.loadout[d.sel]) {
+    // ช่องที่เลือกว่าง -> เลื่อนไปช่องแรกที่มีคาถา (HUD จะแสดงตรงกัน)
+    const first = d.loadout.findIndex(Boolean);
+    if (first >= 0) d.sel = first;
+  }
+  const spellId = d.loadout[d.sel];
   if (!spellId || !SPELLS[spellId]) {
     actionbar(player, "§cยังไม่ได้ใส่คาถา §7— ย่อตัว + ใช้คทา เพื่อเลือกคาถา");
     return;

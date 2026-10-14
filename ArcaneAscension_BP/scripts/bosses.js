@@ -37,6 +37,14 @@ export function registerBoss(e, isNew = false) {
   else safe(() => e.setDynamicProperty("arc:home", st.home));
   const ph = safe(() => e.getDynamicProperty("arc:phase"));
   if (typeof ph === "number") st.phase = ph;
+  if (st.type === "arc:void_titan" && st.phase === 2) {
+    // โหลดโลกใหม่ระหว่างระยะโล่: เชื่อมผลึกที่ยังเหลือกลับมา
+    st.crystals = safe(() => e.dimension.getEntities({ type: "arc:void_crystal", location: st.home, maxDistance: 20 })) ?? [];
+    if (st.crystals.length) {
+      st.shieldUp = true;
+      shielded.add(e.id);
+    }
+  }
   bosses.set(e.id, st);
   safe(() => (e.nameTag = phaseName(st)));
   if (isNew) system.runTimeout(() => alive(e) && intro(st), 2);

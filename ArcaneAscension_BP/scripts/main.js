@@ -2,12 +2,12 @@
 //  Arcane Ascension — มหาเวทข้ามมิติ (Minecraft Bedrock 1.26.50+)
 //  Script API: @minecraft/server 2.10.0, @minecraft/server-ui 2.2.0
 // =====================================================================
-import { world, system, ItemStack, EntitySwingSource, ScriptEventSource } from "@minecraft/server";
+import { world, system, EntitySwingSource, ScriptEventSource } from "@minecraft/server";
 import { DIMENSION_ID, STAFFS } from "./config.js";
 import { getData, saveData, forget, startAutosave } from "./data.js";
 import { initCombat, spellDamage } from "./combat.js";
 import { initProjectiles, launch } from "./projectiles.js";
-import { initProgression, setBloodMoonProbe, addXp, addMana, questProgress } from "./progression.js";
+import { initProgression, setBloodMoonProbe, addMana } from "./progression.js";
 import { initSpells, tryCast } from "./spells.js";
 import { initMobs } from "./mobs.js";
 import { initBosses, summonWithSigil } from "./bosses.js";
@@ -16,10 +16,11 @@ import { initWaystones, waystoneComponent } from "./waystones.js";
 import { altarComponent } from "./altar.js";
 import { initEvents, bloodMoonActive } from "./events.js";
 import { initHud } from "./hud.js";
+import { initOre, oreSense, handleOreBreak } from "./ore.js";
 import { openGrimoire, openSpellWheel, cycleSpell } from "./ui.js";
 import { registerCommands, ACTIONS } from "./commands.js";
 import { fx, COL, sound, psound, forgetFog } from "./fx.js";
-import { V, alive, randInt, chance, safe, tell, title, isCreative, isOp, eyeOf, giveItem } from "./util.js";
+import { V, alive, safe, tell, title, isOp, eyeOf, giveItem } from "./util.js";
 
 // ---------- ช่วงเริ่มต้น: มิติใหม่ + บล็อกคอมโพเนนต์ + คำสั่ง ----------
 let dimRegistered = false;
@@ -80,7 +81,8 @@ function onItemUse(player, item) {
   }
   switch (id) {
     case "arc:grimoire":
-      openGrimoire(player);
+      if (player.isSneaking) oreSense(player);
+      else openGrimoire(player);
       break;
     case "arc:rift_key":
       useRiftKey(player);
@@ -105,39 +107,6 @@ function useOnce(player, item) {
   if ((lastUse.get(player.id) ?? -99) + 4 > t) return;
   lastUse.set(player.id, t);
   onItemUse(player, item);
-}
-
-// ---------- แร่อาร์เคน ----------
-function onBreak(ev) {
-  const id = ev.brokenBlockPermutation.type.id;
-  const player = ev.player;
-  if (isCreative(player)) return;
-  const dim = ev.block.dimension;
-  const at = { x: ev.block.x + 0.5, y: ev.block.y + 0.5, z: ev.block.z + 0.5 };
-  if (id === "arc:arcane_ore" || id === "arc:deepslate_arcane_ore") {
-    const tool = ev.itemStackBeforeBreak;
-    if (!tool || !tool.typeId.endsWith("_pickaxe")) {
-      tell(player, "§7ต้องใช้อีเต้อขุดแร่อาร์เคน");
-      return;
-    }
-    const ench = safe(() => tool.getComponent("minecraft:enchantable"));
-    if (safe(() => ench?.getEnchantment("silk_touch"))) {
-      safe(() => dim.spawnItem(new ItemStack(id, 1), at));
-      return;
-    }
-    const fortune = safe(() => ench?.getEnchantment("fortune")?.level) ?? 0;
-    safe(() => dim.spawnItem(new ItemStack("arc:arcane_shard", randInt(1, 3) + randInt(0, fortune)), at));
-    for (let i = randInt(2, 4); i > 0; i--) safe(() => dim.spawnEntity("minecraft:xp_orb", at));
-    fx.shards(dim, at, COL.arcane, 12, 4);
-    sound(dim, "break.amethyst_block", at, 0.8, 1.2);
-    const d = getData(player);
-    d.st.ore++;
-    addXp(player, 5);
-    questProgress(player, "mine");
-  } else if (id === "minecraft:amethyst_cluster" && chance(0.2)) {
-    safe(() => dim.spawnItem(new ItemStack("arc:arcane_shard", 1), at));
-    fx.shards(dim, at, COL.arcane, 6, 3);
-  }
 }
 
 // ---------- ยามานา ----------
@@ -189,6 +158,7 @@ world.afterEvents.worldLoad.subscribe(() => {
   initWaystones();
   initEvents();
   initHud();
+  initOre();
   startAutosave();
 
   world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
@@ -208,7 +178,7 @@ world.afterEvents.worldLoad.subscribe(() => {
     if (!player.isSneaking || !heldItemStack || !STAFFS[heldItemStack.typeId]) return;
     if (swingSource === EntitySwingSource.Attack || swingSource === EntitySwingSource.None) cycleSpell(player);
   });
-  world.afterEvents.playerBreakBlock.subscribe(onBreak);
+  world.afterEvents.playerBreakBlock.subscribe(handleOreBreak);
   world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => onSpawn(player, initialSpawn));
   world.beforeEvents.playerLeave.subscribe(({ player }) => {
     try {
@@ -228,5 +198,5 @@ world.afterEvents.worldLoad.subscribe(() => {
   });
 
   for (const p of world.getAllPlayers()) onSpawn(p, true);
-  console.warn(`[Arcane] Arcane Ascension loaded (rift dimension: ${dimRegistered ? DIMENSION_ID : "sky fallback"})`);
+  console.log(`[Arcane] Arcane Ascension loaded (rift dimension: ${dimRegistered ? DIMENSION_ID : "sky fallback"})`);
 });

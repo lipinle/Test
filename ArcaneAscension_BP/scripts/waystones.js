@@ -4,7 +4,7 @@ import { WAYSTONE_MANA_COST } from "./config.js";
 import { getData, saveData, getWorld, setWorld } from "./data.js";
 import { questProgress, addMana } from "./progression.js";
 import { fx, COL, sound, psound, fade } from "./fx.js";
-import { V, alive, safe, tell, actionbar, isCreative, isOp, fmt } from "./util.js";
+import { V, alive, safe, tell, actionbar, isCreative, isOp, fmt, showForm } from "./util.js";
 
 const KEY = "arc:waystones";
 const DIM_NAME = { "minecraft:overworld": "โลกปกติ", "minecraft:nether": "เนเธอร์", "minecraft:the_end": "The End" };
@@ -50,11 +50,10 @@ function discover(player, w, announce = true) {
 }
 
 function rename(player, w) {
-  new ModalFormData()
+  showForm(new ModalFormData()
     .title("§dตั้งชื่อหินวาร์ป")
     .textField("ชื่อ", "เช่น บ้าน, เหมือง, หมู่บ้าน", { defaultValue: w.name })
-    .submitButton("บันทึก")
-    .show(player)
+    .submitButton("บันทึก"), player)
     .then((res) => {
       if (res.canceled) return;
       const name = String(res.formValues?.[0] ?? "").trim().slice(0, 32);
@@ -95,7 +94,7 @@ export function openWaystoneMenu(player, here) {
     actions.push(() => rename(player, here));
   }
   if (!actions.length) form.body("§7ยังไม่รู้จักหินวาร์ปอื่นเลย\n§8แตะหินวาร์ปที่อื่นเพื่อค้นพบ หรือสร้างใหม่: อิฐหิน 5 + เศษผลึก 3 + ไข่มุกเอนเดอร์");
-  form.show(player).then((res) => {
+  showForm(form, player).then((res) => {
     if (res.canceled || res.selection === undefined) return;
     actions[res.selection]?.();
   });

@@ -4,7 +4,7 @@
     "description": {
       "identifier": "arc:arcane_ore_feature"
     },
-    "count": 5,
+    "count": 7,
     "replace_rules": [
       {
         "places_block": "arc:arcane_ore",

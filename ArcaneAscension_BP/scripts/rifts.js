@@ -1,11 +1,11 @@
 import { world, system, BlockVolume, ItemStack } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { RIFT_TIERS, RIFT_LOOT, RIFT_COLLAPSE_SECONDS, RIFT_ABANDON_SECONDS } from "./config.js";
-import { getData, saveData, getWorld, setWorld } from "./data.js";
+import { getData, saveData, getWorld, setWorld, worldSettings, saveWorldSettings } from "./data.js";
 import { addXp, addMana, questProgress } from "./progression.js";
 import { fx, COL, sound, psound, fade, pushFog, popFog, shakeNear } from "./fx.js";
 import {
-  V, alive, rand, randInt, pick, weightedPick, safe, title, tell, actionbar, consumeItem, isCreative, roman, heal,
+  V, alive, rand, randInt, pick, weightedPick, safe, title, tell, actionbar, consumeItem, isCreative, roman, heal, showForm,
 } from "./util.js";
 
 // ============================================================================
@@ -110,27 +110,93 @@ function box(a, b) {
   };
 }
 
-function fillOp(ops, a, b, block) {
+// ---------- ระบบสร้างแบบแบ่งตาม chunk ----------
+// แต่ละ chunk มีคิวคำสั่งของตัวเอง และทำตามลำดับเสมอ (ล้าง → พื้น → กำแพง → ประตู → ของตกแต่ง)
+// ไม่พึ่ง isChunkLoaded: ลองวางเลย ถ้า chunk ยังไม่โหลดเกมจะ throw แล้วรอบหน้าค่อยลองใหม่
+// chunk ที่โหลดแล้ว (เช่นรอบตัวผู้เล่น) จะสร้างเสร็จก่อนโดยไม่ต้องรอ chunk ไกล ๆ
+function queueOf(plan, x, z) {
+  const cx = Math.floor(x / 16);
+  const cz = Math.floor(z / 16);
+  const key = `${cx},${cz}`;
+  let q = plan.get(key);
+  if (!q) plan.set(key, (q = { key, cx, cz, ops: [], i: 0, done: false, fails: 0 }));
+  return q;
+}
+
+function fillOp(plan, a, b, block) {
   const bx = box(a, b);
-  ops.push({ ...bx, run: (dim) => dim.fillBlocks(new BlockVolume(bx.min, bx.max), block) });
-}
-
-function setOp(ops, p, block) {
-  ops.push({ min: p, max: p, run: (dim) => dim.setBlockType(p, block) });
-}
-
-function boxLoaded(dim, min, max) {
-  try {
-    for (let x = min.x; x <= max.x + 15; x += 16) {
-      for (let z = min.z; z <= max.z + 15; z += 16) {
-        if (!dim.isChunkLoaded({ x: Math.min(x, max.x), y: min.y, z: Math.min(z, max.z) })) return false;
-      }
+  for (let cx = Math.floor(bx.min.x / 16); cx <= Math.floor(bx.max.x / 16); cx++) {
+    for (let cz = Math.floor(bx.min.z / 16); cz <= Math.floor(bx.max.z / 16); cz++) {
+      const min = { x: Math.max(bx.min.x, cx * 16), y: bx.min.y, z: Math.max(bx.min.z, cz * 16) };
+      const max = { x: Math.min(bx.max.x, cx * 16 + 15), y: bx.max.y, z: Math.min(bx.max.z, cz * 16 + 15) };
+      queueOf(plan, min.x, min.z).ops.push({ min, max, block });
     }
-    return true;
-  } catch {
-    return false;
   }
 }
+
+function setOp(plan, p, block) {
+  fillOp(plan, p, p, block);
+}
+
+function customOp(plan, p, run) {
+  queueOf(plan, p.x, p.z).ops.push({ min: p, max: p, run });
+}
+
+function runOp(dim, op) {
+  if (op.run) return op.run(dim);
+  if (op.min.x === op.max.x && op.min.y === op.max.y && op.min.z === op.max.z) return dim.setBlockType(op.min, op.block);
+  return dim.fillBlocks(new BlockVolume(op.min, op.max), op.block);
+}
+
+/** ทำคำสั่งในคิวตามลำดับ คืนจำนวนคำสั่งที่สำเร็จ (budget = จำนวนสูงสุดรอบนี้) */
+function buildStep(rt, queues, budget, nearPlayers = []) {
+  let did = 0;
+  for (const q of queues) {
+    if (q.done) continue;
+    while (q.i < q.ops.length && did < budget) {
+      try {
+        runOp(rt.dim, q.ops[q.i]);
+      } catch (err) {
+        q.fails++;
+        if (!rt.loggedError) {
+          rt.loggedError = true;
+          console.warn(`[Arcane] rift build waiting for chunk ${q.key}: ${err}`);
+        }
+        // มีผู้เล่นยืนอยู่ใกล้ chunk นี้แต่ยังวางไม่ได้ซ้ำ ๆ -> ข้ามคำสั่งนี้ไป ไม่ให้คิวค้างตลอดกาล
+        const near = nearPlayers.some((p) => alive(p) && Math.abs(Math.floor(p.location.x / 16) - q.cx) <= 1 && Math.abs(Math.floor(p.location.z / 16) - q.cz) <= 1);
+        if (near && q.fails > 30) {
+          q.i++;
+          q.fails = 0;
+        }
+        break;
+      }
+      q.i++;
+      did++;
+    }
+    if (q.i >= q.ops.length) q.done = true;
+    if (did >= budget) break;
+  }
+  return did;
+}
+
+function* buildJob(rt) {
+  for (let pass = 0; pass < 2; pass++) {
+    let progress = 0;
+    for (const q of rt.queues) {
+      while (!q.done && !rt.collapsing) {
+        const n = buildStep(rt, [q], 3);
+        progress += n;
+        if (!n) break;
+        yield;
+      }
+    }
+    if (!progress) break;
+  }
+  rt.firstPassDone = true;
+}
+
+const allBuilt = (rt) => !!rt.queues && rt.queues.every((q) => q.done);
+const startBuilt = (rt) => !!rt.startQueues && rt.startQueues.every((q) => q.done);
 
 function cellBox(rt, c) {
   const o = rt.origin;
@@ -173,12 +239,12 @@ function bounds(rt) {
   };
 }
 
-function buildOps(rt) {
-  const ops = [];
+function buildPlan(rt) {
+  const ops = new Map();
   const o = rt.origin;
   const y0 = o.y;
   const bd = bounds(rt);
-  for (let y = bd.min.y; y <= bd.max.y; y++) fillOp(ops, { x: bd.min.x, y, z: bd.min.z }, { x: bd.max.x, y, z: bd.max.z }, T.air);
+  fillOp(ops, bd.min, bd.max, T.air); // ล้างพื้นที่ก่อน (แยกตาม chunk จึงไม่ไปลบของที่สร้างแล้ว)
   // ห้อง
   fillOp(ops, { x: o.x, y: y0, z: o.z }, { x: o.x + SIZE, y: y0, z: o.z + SIZE }, T.floor);
   fillOp(ops, { x: o.x, y: y0 + ROOM_H, z: o.z }, { x: o.x + SIZE, y: y0 + ROOM_H, z: o.z + SIZE }, T.wall);
@@ -216,7 +282,7 @@ function buildOps(rt) {
       fillOp(ops, { x: cx - 1, y: y0, z: cz - 1 }, { x: cx + 1, y: y0, z: cz + 1 }, T.crystal);
       for (const [dx, dz] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) setOp(ops, { x: cx + dx, y: y0 + 1, z: cz + dz }, T.cluster);
       const at = { x: cx, y: y0 + 1, z: cz };
-      ops.push({ min: at, max: at, run: (dim) => fillChest(dim, at, rt.rec.tier) });
+      customOp(ops, at, (dim) => fillChest(dim, at, rt.rec.tier));
     } else if (c.type === "shrine") {
       setOp(ops, { x: cx, y: y0 + 1, z: cz }, T.crystal);
       setOp(ops, { x: cx, y: y0 + 2, z: cz }, T.lamp);
@@ -291,56 +357,23 @@ function fillChest(dim, at, tier) {
   }
 }
 
-// ---------- งานสร้าง (runJob) ----------
-function* buildJob(rt) {
-  const dim = rt.dim;
-  let spent = 0;
-  for (const op of rt.ops) {
-    if (!boxLoaded(dim, op.min, op.max)) {
-      rt.deferred.push(op);
-    } else {
-      try {
-        op.run(dim);
-      } catch {
-        rt.deferred.push(op);
-      }
-    }
-    if (++spent % 4 === 0) yield;
-  }
-  rt.ops = [];
-  rt.firstPassDone = true;
-}
-
-function retryDeferred(rt, budget = 20) {
-  if (!rt.deferred.length) return;
-  const keep = [];
-  for (const op of rt.deferred) {
-    if (budget <= 0 || !boxLoaded(rt.dim, op.min, op.max)) {
-      keep.push(op);
-      continue;
-    }
-    budget--;
-    try {
-      op.run(rt.dim);
-    } catch {
-      keep.push(op);
-    }
-  }
-  rt.deferred = keep;
-}
-
 // ---------- สร้าง / เปิดรอยแยก ----------
 function overlaps(a, b) {
   return a.min.x <= b.max.x && a.max.x >= b.min.x && a.min.z <= b.max.z && a.max.z >= b.min.z && a.min.y <= b.max.y && a.max.y >= b.min.y;
 }
 
+function useSky() {
+  return !riftDim || !!worldSettings().riftSky;
+}
+
 function allocate(player) {
-  if (riftDim) {
-    const slot = (getWorld("arc:riftslot", 0) + 1) % 16;
+  if (!useSky()) {
+    // ช่องใหม่ทุกครั้ง (ไม่ใช้ซ้ำ) ห่างกัน 1024 บล็อก จึงไม่มีซากรอยแยกเก่ามาทับ
+    const slot = (getWorld("arc:riftslot", 0) + 1) % 4096;
     setWorld("arc:riftslot", slot);
     const hr = safe(() => riftDim.heightRange) ?? { min: 0, max: 256 };
     const y = Math.max(hr.min + 10, Math.min(64, hr.max - 30));
-    return { dim: riftDim, origin: { x: slot * 1024 + 512, y, z: 512 }, slot };
+    return { dim: riftDim, origin: { x: (slot % 64) * 1024 + 512, y, z: Math.floor(slot / 64) * 1024 + 512 }, slot };
   }
   const dim = player.dimension;
   if (dim.id === "minecraft:nether") return undefined;
@@ -362,7 +395,7 @@ export async function openRift(player, tier) {
   const id = `r${Date.now().toString(36)}${randInt(0, 999)}`;
   const rt = {
     rec: { id, tier, dim: alloc.dim.id, origin: alloc.origin, slot: alloc.slot, players: [], state: "building", owner: player.id },
-    dim: alloc.dim, origin: alloc.origin, layout: genLayout(), ops: [], deferred: [], firstPassDone: false,
+    dim: alloc.dim, origin: alloc.origin, layout: genLayout(), plan: null, queues: [], startQueues: [], firstPassDone: false,
     corridorOpen: false, bossSpawned: false, bossId: null, emptySince: 0, collapseAt: 0, portal: null, exitPortal: null,
     opened: system.currentTick, inside: [], ticking: null,
   };
@@ -374,7 +407,7 @@ export async function openRift(player, tier) {
       return false;
     }
   }
-  rt.ops = buildOps(rt);
+  preparePlan(rt);
   runtime.set(id, rt);
   saveRecords();
   spawnEntrance(player, rt);
@@ -383,16 +416,29 @@ export async function openRift(player, tier) {
   return true;
 }
 
+function preparePlan(rt) {
+  rt.plan = buildPlan(rt);
+  const sp = startPos(rt);
+  // สร้างห้องเริ่มต้นก่อนเสมอ แล้วไล่ออกไปตามระยะ
+  rt.queues = [...rt.plan.values()].sort((a, b) => Math.hypot(a.cx * 16 + 8 - sp.x, a.cz * 16 + 8 - sp.z) - Math.hypot(b.cx * 16 + 8 - sp.x, b.cz * 16 + 8 - sp.z));
+  const c = cellBox(rt, rt.layout.cells[rt.layout.start]);
+  const keys = new Set();
+  for (const x of [c.x0, c.x0 + CELL]) for (const z of [c.z0, c.z0 + CELL]) keys.add(`${Math.floor(x / 16)},${Math.floor(z / 16)}`);
+  rt.startQueues = [...keys].map((k) => rt.plan.get(k)).filter(Boolean);
+}
+
 async function prepareTicking(rt) {
   const bd = bounds(rt);
   const opts = { dimension: rt.dim, from: bd.min, to: bd.max };
   try {
     const mgr = world.tickingAreaManager;
     if (!mgr.hasCapacity(opts)) return;
-    const name = `arc_rift_${rt.rec.slot >= 0 ? rt.rec.slot : rt.rec.id}`;
+    const name = `arc_rift_${rt.rec.id}`;
+    rt.rec.ticking = name;
     if (mgr.hasTickingArea(name)) mgr.removeTickingArea(name);
     await Promise.race([mgr.createTickingArea(name, opts), system.waitTicks(200)]);
     rt.ticking = name;
+    saveRecords();
   } catch (err) {
     console.warn(`[Arcane] ticking area: ${err}`);
   }
@@ -457,12 +503,79 @@ export function enterRift(player, rt) {
       console.warn(`[Arcane] enter rift: ${err}`);
       return;
     }
-    safe(() => player.addEffect("slow_falling", 120, { amplifier: 0, showParticles: false }));
-    safe(() => player.addEffect("resistance", 60, { amplifier: 4, showParticles: false }));
+    safe(() => player.addEffect("slow_falling", 200, { amplifier: 0, showParticles: false }));
+    safe(() => player.addEffect("resistance", 100, { amplifier: 4, showParticles: false }));
+    if (!floorUnderStart(rt)) holdPlayer(player, rt);
     pushFog(player, "arc:rift", "arc_rift");
     title(player, `${tier.color}§lรอยแยกมิติ ระดับ ${tier.name}`, "§7เคลียร์ทุกห้องเพื่อเปิดทางสู่ลานบอส", 10, 60, 20);
     psound(player, "beacon.activate", 1, 0.7);
   }, 7);
+}
+
+// ---------- กันตกมิติ: ตรึงผู้เล่นไว้ที่จุดเกิดจนกว่าพื้นจะถูกสร้าง ----------
+const holds = new Map(); // player.id -> { rt, since }
+const HOLD_LIMIT = 20 * 25; // ถ้า 25 วินาทียังสร้างพื้นไม่ได้ ถือว่ามิตินี้ใช้ไม่ได้ในเครื่องนี้
+
+function floorUnderStart(rt) {
+  const s = startPos(rt);
+  const b = safe(() => rt.dim.getBlock({ x: Math.floor(s.x), y: rt.origin.y, z: Math.floor(s.z) }));
+  return !!b && !b.isAir && !b.isLiquid;
+}
+
+function holdPlayer(player, rt) {
+  if (!holds.has(player.id)) holds.set(player.id, { rt, since: system.currentTick });
+}
+
+function tickHolds() {
+  const tick = system.currentTick;
+  for (const [pid, h] of holds) {
+    const p = /** @type {import("@minecraft/server").Player | undefined} */ (world.getEntity(pid));
+    const rt = h.rt;
+    if (!p || !alive(p) || rt.collapsing || p.dimension.id !== rt.dim.id) {
+      holds.delete(pid);
+      continue;
+    }
+    buildStep(rt, rt.startQueues, 40, [p]);
+    if (!floorUnderStart(rt)) {
+      // ลองวางแท่นยืนใต้จุดเกิดตรง ๆ (เป็นส่วนหนึ่งของพื้นห้องอยู่แล้ว)
+      const s = startPos(rt);
+      safe(() => rt.dim.fillBlocks(new BlockVolume({ x: Math.floor(s.x) - 1, y: rt.origin.y, z: Math.floor(s.z) - 1 }, { x: Math.floor(s.x) + 1, y: rt.origin.y, z: Math.floor(s.z) + 1 }), T.floor));
+    }
+    if (floorUnderStart(rt)) {
+      holds.delete(pid);
+      actionbar(p, "§dรอยแยกก่อตัวเสร็จแล้ว!");
+      continue;
+    }
+    const s = startPos(rt);
+    if (V.dist(p.location, s) > 0.6) safe(() => p.teleport(s, { keepVelocity: false }));
+    safe(() => p.addEffect("slow_falling", 40, { amplifier: 0, showParticles: false }));
+    actionbar(p, `§dรอยแยกกำลังก่อตัว... §7${Math.ceil((HOLD_LIMIT - (tick - h.since)) / 20)}`);
+    if (tick - h.since > HOLD_LIMIT) {
+      holds.delete(pid);
+      failRift(rt);
+    }
+  }
+}
+
+/** สร้างดันเจี้ยนไม่สำเร็จ: ส่งทุกคนกลับ คืนกุญแจ และถ้าเป็นมิติใหม่ ครั้งหน้าจะสร้างบนท้องฟ้าแทน */
+function failRift(rt) {
+  if (rt.collapsing) return;
+  const custom = rt.rec.slot >= 0;
+  if (custom) {
+    const ws = worldSettings();
+    ws.riftSky = true;
+    saveWorldSettings(ws);
+  }
+  console.warn(`[Arcane] rift ${rt.rec.id} could not be built in ${rt.dim.id}${custom ? " — switching to sky dungeons" : ""}`);
+  const msg = custom
+    ? "§cสร้างดันเจี้ยนในมิติใหม่ไม่สำเร็จบนอุปกรณ์นี้ §7— คืนกุญแจแล้ว ครั้งหน้าจะสร้างดันเจี้ยนบนท้องฟ้าแทน"
+    : "§cสร้างดันเจี้ยนไม่สำเร็จ §7— คืนกุญแจแล้ว ลองเปิดใหม่ในที่โล่ง ๆ";
+  const owner = /** @type {import("@minecraft/server").Player | undefined} */ (world.getEntity(rt.rec.owner));
+  if (owner && alive(owner)) {
+    safe(() => owner.getComponent("minecraft:inventory")?.container?.addItem(new ItemStack("arc:rift_key", 1)));
+    tell(owner, msg);
+  }
+  collapse(rt, msg);
 }
 
 function homeOf(player) {
@@ -664,28 +777,32 @@ function collapse(rt, reason = "§5รอยแยกพังทลายแล
       }
     }
   }
+  holdsClear(rt);
   system.runTimeout(() => {
     safe(() => {
       for (const e of rt.dim.getEntities({ tags: [`arc_rift_${rt.rec.id}`] })) e.remove();
     });
     if (alive(rt.portal)) safe(() => rt.portal.remove());
+    // ลบบล็อกทีละ chunk (chunk ที่ไม่โหลดจะลองใหม่เรื่อย ๆ สูงสุด 2 นาที)
+    const plan = new Map();
     const bd = bounds(rt);
-    const ops = [];
-    for (let y = bd.min.y; y <= bd.max.y; y++) fillOp(ops, { x: bd.min.x, y, z: bd.min.z }, { x: bd.max.x, y, z: bd.max.z }, T.air);
-    rt.deferred = [];
-    rt.ops = ops;
-    system.runJob(cleanupJob(rt));
+    fillOp(plan, bd.min, bd.max, T.air);
+    rt.cleanup = [...plan.values()];
+    rt.cleanupUntil = system.currentTick + 20 * 120;
   }, 20);
 }
 
-function* cleanupJob(rt) {
-  for (const op of rt.ops) {
-    if (boxLoaded(rt.dim, op.min, op.max)) safe(() => op.run(rt.dim));
-    yield;
+function holdsClear(rt) {
+  for (const [pid, h] of holds) if (h.rt === rt) holds.delete(pid);
+}
+
+function tickCleanup(rt) {
+  buildStep(rt, rt.cleanup, 40, world.getAllPlayers());
+  if (rt.cleanup.every((q) => q.done) || system.currentTick > rt.cleanupUntil) {
+    if (rt.ticking) safe(() => world.tickingAreaManager.removeTickingArea(rt.ticking));
+    runtime.delete(rt.rec.id);
+    saveRecords();
   }
-  if (rt.ticking) safe(() => world.tickingAreaManager.removeTickingArea(rt.ticking));
-  runtime.delete(rt.rec.id);
-  saveRecords();
 }
 
 // ---------- ลูปหลัก ----------
@@ -693,26 +810,27 @@ function tickRift(rt) {
   const tick = system.currentTick;
   if (rt.collapsing) return;
   if (rt.portal && alive(rt.portal)) {
-    const ready = rt.firstPassDone;
+    const ready = portalReady(rt);
     const tier = RIFT_TIERS[rt.rec.tier];
     safe(() => (rt.portal.nameTag = `${tier.color}§lรอยแยกมิติ ระดับ ${tier.name}\n${ready ? "§aเดินเข้ามาเพื่อเข้าสู่รอยแยก" : "§7กำลังเปิด..."}`));
     fx.swirl(rt.portal.dimension, V.up(rt.portal.location, 0.3), COL.void, 2.5, 6, 0.2);
     if (tick > rt.portalExpire || rt.rec.state === "complete") safe(() => rt.portal.remove());
   }
-  retryDeferred(rt);
   rt.inside = world.getAllPlayers().filter((p) => getData(p).riftId === rt.rec.id && isInsideRift(p, rt));
+  if (!allBuilt(rt)) buildStep(rt, rt.queues, 60, rt.inside);
   if (!rt.inside.length) {
     if (!rt.emptySince) rt.emptySince = tick;
     if (tick - rt.emptySince > RIFT_ABANDON_SECONDS * 20 && tick - rt.opened > 20 * 60) collapse(rt, "§5รอยแยกถูกทิ้งร้างและพังทลาย");
   } else rt.emptySince = 0;
   for (const p of rt.inside) {
-    if (p.location.y < rt.origin.y - 8) {
-      safe(() => p.teleport(startPos(rt)));
-      safe(() => p.applyDamage(4));
-      actionbar(p, "§5ความว่างเปล่าผลักคุณกลับมา...");
+    if (p.location.y < rt.origin.y - 6 && !holds.has(p.id)) {
+      safe(() => p.teleport(startPos(rt), { keepVelocity: false }));
+      safe(() => p.addEffect("slow_falling", 60, { amplifier: 0, showParticles: false }));
+      if (!floorUnderStart(rt)) holdPlayer(p, rt);
+      else actionbar(p, "§5ความว่างเปล่าผลักคุณกลับมา...");
     }
   }
-  if (rt.rec.state === "building" && rt.firstPassDone) {
+  if (rt.rec.state === "building" && (rt.firstPassDone || startBuilt(rt))) {
     rt.rec.state = "open";
     saveRecords();
   }
@@ -746,7 +864,11 @@ function tickRift(rt) {
     }
   });
   const ac = arenaCenter(rt);
-  if (rt.corridorOpen && !rt.bossSpawned && rt.inside.some((p) => V.distXZ(p.location, ac) < 11)) spawnBoss(rt);
+  if (rt.corridorOpen && !rt.bossSpawned && rt.inside.some((p) => V.distXZ(p.location, ac) < 11)) {
+    // รอให้พื้นลานบอสสร้างเสร็จก่อน (chunk ไกล ๆ อาจเพิ่งโหลดตอนเดินมาถึง)
+    const floor = safe(() => rt.dim.getBlock({ x: Math.floor(ac.x), y: rt.origin.y, z: Math.floor(ac.z) }));
+    if (floor && !floor.isAir) spawnBoss(rt);
+  }
   if (rt.bossSpawned && rt.rec.state === "boss" && rt.bossId) {
     const boss = world.getEntity(rt.bossId);
     if (boss && alive(boss) && V.distXZ(boss.location, ac) > 15) safe(() => boss.teleport(ac));
@@ -762,9 +884,14 @@ function tickRift(rt) {
   }
 }
 
+/** เข้าได้เมื่อห้องเริ่มต้นสร้างเสร็จ หรือรอเกิน 15 วินาที (บางเครื่องโหลด chunk เมื่อมีผู้เล่นอยู่เท่านั้น — ระบบจะตรึงผู้เล่นไว้จนพื้นเสร็จ) */
+function portalReady(rt) {
+  return startBuilt(rt) || (rt.firstPassDone && system.currentTick - rt.opened > 300);
+}
+
 function tickPortals() {
   for (const rt of runtime.values()) {
-    if (!rt.portal || !alive(rt.portal) || !rt.firstPassDone || rt.collapsing) continue;
+    if (!rt.portal || !alive(rt.portal) || !portalReady(rt) || rt.collapsing) continue;
     const pl = rt.portal.location;
     for (const p of rt.portal.dimension.getPlayers({ location: pl, maxDistance: 3 })) {
       if (getData(p).riftId === rt.rec.id && isInsideRift(p, rt)) continue;
@@ -789,7 +916,7 @@ export function useRiftKey(player) {
     const lock = unlocked ? "" : `\n§c🔒 เลเวล ${info.level}${info.requires ? ` + พิชิตระดับ ${roman(info.requires)}` : ""}`;
     form.button(`${info.color}§lระดับ ${info.name}§r §8(ผ่าน ${d.rift.clears[t] ?? 0} ครั้ง)${lock}`, "textures/arc_ui/menu_rift");
   }
-  form.show(player).then((res) => {
+  showForm(form, player).then((res) => {
     if (res.canceled || res.selection === undefined) return;
     const t = tiers[res.selection];
     const info = RIFT_TIERS[t];
@@ -827,13 +954,24 @@ export function initRifts() {
     const dim = safe(() => world.getDimension(rec.dim));
     if (!dim) continue;
     const rt = {
-      rec, dim, origin: rec.origin, layout: { cells: [], start: 0, exit: 0 }, ops: [], deferred: [], firstPassDone: true,
-      inside: [], ticking: rec.slot >= 0 ? `arc_rift_${rec.slot}` : `arc_rift_${rec.id}`, opened: 0,
+      rec, dim, origin: rec.origin, layout: { cells: [], start: 0, exit: 0 }, plan: null, queues: [], startQueues: [], firstPassDone: true,
+      inside: [], ticking: rec.ticking ?? (rec.slot >= 0 ? `arc_rift_${rec.slot}` : `arc_rift_${rec.id}`), opened: 0,
     };
+    if (rec.exitZ === undefined) rec.exitZ = 0;
     rt.layout.cells = [{ x: 0, z: 0, links: new Set() }];
     runtime.set(rec.id, rt);
     system.runTimeout(() => collapse(rt, "§5รอยแยกพังทลายระหว่างที่โลกปิดอยู่"), 60);
   }
+  // ประตูมิติที่ค้างจากการเซฟเกม (ไม่มีรอยแยกเจ้าของแล้ว) -> ลบทิ้ง
+  const isLivePortal = (e) => [...runtime.values()].some((rt) => (rt.portal && rt.portal.id === e.id) || (rt.exitPortal && rt.exitPortal.id === e.id));
+  world.afterEvents.entityLoad.subscribe(({ entity }) => {
+    if (entity.typeId === "arc:rift_portal" && !isLivePortal(entity)) system.run(() => alive(entity) && safe(() => entity.remove()));
+  });
+  system.runTimeout(() => {
+    for (const d of ["overworld", "nether", "the_end"]) {
+      for (const e of safe(() => world.getDimension(d).getEntities({ type: "arc:rift_portal" })) ?? []) if (!isLivePortal(e)) safe(() => e.remove());
+    }
+  }, 100);
   world.afterEvents.entityDie.subscribe((ev) => {
     let tags = [];
     try {
@@ -888,13 +1026,15 @@ export function initRifts() {
     }
   });
   system.runInterval(() => {
-    for (const rt of runtime.values()) {
+    for (const rt of [...runtime.values()]) {
       try {
-        tickRift(rt);
+        if (rt.cleanup) tickCleanup(rt);
+        else tickRift(rt);
       } catch (err) {
         console.warn(`[Arcane] rift tick: ${err}`);
       }
     }
   }, 10);
+  system.runInterval(tickHolds, 2);
   system.runInterval(tickPortals, 4);
 }

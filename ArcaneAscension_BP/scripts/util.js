@@ -233,8 +233,26 @@ export function itemNameStr(typeId) {
 }
 
 // ---------- ข้อความ ----------
+const lastMsg = new Map(); // player.id -> tick ที่ส่งข้อความ actionbar ล่าสุด (HUD จะหลบให้)
+
 export function actionbar(player, text) {
+  lastMsg.set(player.id, system.currentTick);
   safe(() => player.onScreenDisplay.setActionBar(text));
+}
+
+/** มีข้อความ actionbar อื่นแสดงอยู่ภายใน ticks ที่ผ่านมาไหม */
+export function recentActionbar(player, ticks = 40) {
+  return system.currentTick - (lastMsg.get(player.id) ?? -9999) < ticks;
+}
+
+/** เปิดฟอร์ม ถ้าผู้เล่นติดหน้าจออื่นอยู่ (UserBusy) จะลองใหม่อัตโนมัติ */
+export function showForm(form, player, attempt = 0) {
+  return form.show(player).then((res) => {
+    if (res.canceled && res.cancelationReason === "UserBusy" && attempt < 20) {
+      return system.waitTicks(5).then(() => showForm(form, player, attempt + 1));
+    }
+    return res;
+  });
 }
 
 export function title(player, main, sub = "", fadeIn = 10, stay = 50, fadeOut = 15) {

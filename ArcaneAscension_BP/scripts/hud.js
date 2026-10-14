@@ -3,7 +3,7 @@ import { SPELLS, STAFFS, G, xpToNext, MAX_LEVEL } from "./config.js";
 import { getData } from "./data.js";
 import { maxMana, lastXpPopup } from "./progression.js";
 import { cdLeft, manaCost } from "./spells.js";
-import { getMainhand, bar, fmt1 } from "./util.js";
+import { getMainhand, bar, fmt1, recentActionbar } from "./util.js";
 
 // HUD บนแถบ actionbar: แถบมานา (ไอคอนฟอนต์ glyph_E5) + เลเวล + คาถาที่เลือก + คูลดาวน์
 function manaBar(frac, glyph) {
@@ -17,7 +17,7 @@ function manaBar(frac, glyph) {
 
 function render(player) {
   const d = getData(player);
-  if (!d.set.hud) return;
+  if (!d.set.hud || recentActionbar(player)) return;
   const item = getMainhand(player);
   const staff = item && STAFFS[item.typeId] ? item : undefined;
   const holding = staff || item?.typeId === "arc:grimoire";

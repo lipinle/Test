@@ -4,7 +4,7 @@ import { ALTAR_RECIPES, RUNES, RUNE_SOCKETS, RUNE_WEAPON_SUFFIX } from "./config
 import { getData } from "./data.js";
 import { readRunes } from "./combat.js";
 import { fx, COL, sound, psound } from "./fx.js";
-import { V, countItem, consumeItem, giveStack, getMainhand, setMainhand, itemName, tell, isCreative, safe } from "./util.js";
+import { V, countItem, consumeItem, giveStack, getMainhand, setMainhand, itemName, tell, isCreative, safe, showForm } from "./util.js";
 
 const iconOf = (id) => (id.startsWith("arc:") ? `textures/items/arc_${id.slice(4)}` : undefined);
 
@@ -81,7 +81,7 @@ function runeForge(player, block) {
   if (!Object.keys(RUNES).some((id) => countItem(player, id))) {
     form.body({ rawtext: [{ text: "§7ไม่มีรูนในกระเป๋า\n§8สร้างรูนได้จากเมนูหลอมรวม หรือหาในรอยแยก/บอส" }] });
   }
-  form.show(player).then((res) => {
+  showForm(form, player).then((res) => {
     if (!res.canceled && res.selection !== undefined) actions[res.selection]?.();
   });
 }
@@ -100,7 +100,7 @@ function infusionMenu(player, block) {
     const lvlOk = d.lvl >= r.level;
     form.button({ rawtext: [{ text: ok && lvlOk ? "§a✔ §r" : "§8✘ " }, itemName(r.result), { text: `${r.count ? ` x${r.count}` : ""}\n§8ต้องการเลเวล ${r.level}${lvlOk ? "" : " §c(ยังไม่ถึง)"}` }] }, iconOf(r.result));
   }
-  form.show(player).then((res) => {
+  showForm(form, player).then((res) => {
     if (res.canceled || res.selection === undefined) return;
     recipeDetail(player, block, list[res.selection]);
   });
@@ -115,12 +115,11 @@ function recipeDetail(player, block, r) {
     lines.push({ text: `${have >= n ? "§a" : "§c"}${Math.min(have, n)}/${n} §f` }, itemName(id), { text: "\n" });
   }
   lines.push({ text: `\n§7เลเวลที่ต้องการ: ${d.lvl >= r.level ? "§a" : "§c"}${r.level}` });
-  new MessageFormData()
+  showForm(new MessageFormData()
     .title({ rawtext: [{ text: "§5" }, itemName(r.result)] })
     .body({ rawtext: lines })
     .button1("§lหลอมรวม")
-    .button2("กลับ")
-    .show(player)
+    .button2("กลับ"), player)
     .then((res) => {
       if (res.canceled) return;
       if (res.selection === 1) return infusionMenu(player, block);

@@ -81,7 +81,6 @@
         ]
       },
       "minecraft:burns_in_daylight": {},
-      "minecraft:fire_immune": {},
       "minecraft:despawn": {
         "despawn_from_distance": {}
       },

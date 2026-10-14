@@ -296,6 +296,10 @@ export function initCombat() {
     }
   });
 
+  // ป้ายตัวเลขแบบ entity ที่ค้างจากการเซฟเกม -> ลบทิ้ง
+  world.afterEvents.entityLoad.subscribe(({ entity }) => {
+    if (entity.typeId === "arc:damage_text" && !texts.some((t) => t.ent && t.ent.id === entity.id)) system.run(() => alive(entity) && safe(() => entity.remove()));
+  });
   system.runInterval(tickTexts, 1);
 }
 
