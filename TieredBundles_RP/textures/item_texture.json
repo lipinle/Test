@@ -1,0 +1,36 @@
+{
+  "resource_pack_name": "tiered_bundles",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "bt_bundle_leather": {
+      "textures": "textures/items/bt_bundle_leather"
+    },
+    "bt_bundle_iron": {
+      "textures": "textures/items/bt_bundle_iron"
+    },
+    "bt_bundle_gold": {
+      "textures": "textures/items/bt_bundle_gold"
+    },
+    "bt_bundle_diamond": {
+      "textures": "textures/items/bt_bundle_diamond"
+    },
+    "bt_bundle_netherite": {
+      "textures": "textures/items/bt_bundle_netherite"
+    },
+    "bt_btn_next": {
+      "textures": "textures/items/bt_btn_next"
+    },
+    "bt_btn_prev": {
+      "textures": "textures/items/bt_btn_prev"
+    },
+    "bt_btn_info": {
+      "textures": "textures/items/bt_btn_info"
+    },
+    "bt_btn_fill": {
+      "textures": "textures/items/bt_btn_fill"
+    },
+    "bt_btn_lock": {
+      "textures": "textures/items/bt_btn_lock"
+    }
+  }
+}

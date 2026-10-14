@@ -1,0 +1,15 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_smithing_transform": {
+    "description": {
+      "identifier": "bt:bundle_netherite"
+    },
+    "tags": [
+      "smithing_table"
+    ],
+    "template": "minecraft:netherite_upgrade_smithing_template",
+    "base": "bt:bundle_diamond",
+    "addition": "minecraft:netherite_ingot",
+    "result": "bt:bundle_netherite"
+  }
+}

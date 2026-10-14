@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "bt:bundle_gold",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "bt_bundle_gold"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "item.bt:bundle_gold.name"
+      },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

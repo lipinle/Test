@@ -1,0 +1,29 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bt:bundle_leather"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:leather"
+      }
+    ],
+    "pattern": [
+      "L L",
+      "LLL"
+    ],
+    "key": {
+      "L": {
+        "item": "minecraft:leather"
+      }
+    },
+    "result": {
+      "item": "bt:bundle_leather",
+      "count": 1
+    }
+  }
+}

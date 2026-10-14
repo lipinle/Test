@@ -1,0 +1,14 @@
+item.bt:bundle_leather.name=Leather Bundle
+item.bt:bundle_iron.name=Iron Bundle
+item.bt:bundle_gold.name=Golden Bundle
+item.bt:bundle_diamond.name=Diamond Bundle
+item.bt:bundle_netherite.name=Netherite Bundle
+item.bt:btn_next.name=Next Page
+item.bt:btn_prev.name=Previous Page
+item.bt:btn_info.name=Page
+item.bt:btn_fill.name= 
+item.bt:btn_lock.name=Locked Slot
+entity.bt:bag_ui.name=Bundle
+entity.bt:bag_page.name=Bundle Page
+pack.name=Tiered Bundles
+pack.description=Bundles in 5 tiers with paged double-chest storage

@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bt:bag_page",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/bt_empty"
+      },
+      "geometry": {
+        "default": "geometry.bt_empty"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

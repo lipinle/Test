@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Tiered Bundles (Resources)",
+    "description": "เท็กซ์เจอร์ถุง 5 ระดับ และปุ่มกระจกสี",
+    "uuid": "dd85e8dd-c41f-4baa-9e60-f647c4897e83",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "43af0564-23de-41dd-9aa3-c6f41a0b697e",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

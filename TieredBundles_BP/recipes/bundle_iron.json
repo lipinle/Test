@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bt:bundle_iron"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "bt:bundle_leather"
+      }
+    ],
+    "pattern": [
+      "MMM",
+      "MBM",
+      "MMM"
+    ],
+    "key": {
+      "M": {
+        "item": "minecraft:iron_ingot"
+      },
+      "B": {
+        "item": "bt:bundle_leather"
+      }
+    },
+    "result": {
+      "item": "bt:bundle_iron",
+      "count": 1
+    }
+  }
+}

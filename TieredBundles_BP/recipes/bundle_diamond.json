@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bt:bundle_diamond"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "bt:bundle_gold"
+      }
+    ],
+    "pattern": [
+      "MMM",
+      "MBM",
+      "MMM"
+    ],
+    "key": {
+      "M": {
+        "item": "minecraft:diamond"
+      },
+      "B": {
+        "item": "bt:bundle_gold"
+      }
+    },
+    "result": {
+      "item": "bt:bundle_diamond",
+      "count": 1
+    }
+  }
+}

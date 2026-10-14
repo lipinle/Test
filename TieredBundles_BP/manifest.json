@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Tiered Bundles",
+    "description": "ถุงเก็บของ 5 ระดับ: หนัง 9 / เหล็ก 27 / ทอง 54 / เพชร 108 / เนเทอไรท์ 216 ช่อง หน้าต่างแบบกล่องใหญ่ มีปุ่มกระจกเปลี่ยนหน้า",
+    "uuid": "8fbf473e-cb4f-4bdf-85d6-8754b5b9ed20",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "c0d4c385-ba95-4b83-8165-59b18850605a",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "74ddb056-8700-4da3-9728-b9108a0eab29",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "uuid": "dd85e8dd-c41f-4baa-9e60-f647c4897e83",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}
