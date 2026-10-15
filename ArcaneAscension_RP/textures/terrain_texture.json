@@ -22,9 +22,6 @@
     "arc_void_lamp": {
       "textures": "textures/blocks/arc_void_lamp"
     },
-    "arc_rift_barrier": {
-      "textures": "textures/blocks/arc_rift_barrier"
-    },
     "arc_waystone": {
       "textures": "textures/blocks/arc_waystone"
     },

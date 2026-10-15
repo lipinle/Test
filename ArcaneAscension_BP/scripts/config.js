@@ -1,6 +1,5 @@
 // ===== Arcane Ascension — ค่าตั้งต้นทั้งหมด (แก้ตัวเลขที่นี่ได้เลย) =====
 
-export const DIMENSION_ID = "arc:the_rift"; // มิติใหม่ที่สร้างด้วย Script API (void generator)
 
 // ---------- เลเวล / ค่าสถานะ ----------
 export const MAX_LEVEL = 50;
@@ -99,14 +98,14 @@ export const BESTIARY = [
   { id: "arc:void_wraith", name: "วิญญาณแห่งความว่างเปล่า", lore: "ลอยทะลุกำแพงได้ ออกตอนกลางคืน ยิงลูกเวทสีม่วง ดรอปแก่นแท้ความว่างเปล่า" },
   { id: "arc:crystal_golem", name: "โกเลมผลึก", lore: "อาศัยในถ้ำลึก (Y < 10) อึดและตีแรง เมื่อเลือดเหลือครึ่งจะระเบิดผลึก ดรอปเศษผลึกและหัวใจผลึก" },
   { id: "arc:ember_imp", name: "อิมพ์เพลิง", lore: "ปีศาจตัวเล็กในเนเธอร์ กระโดดใส่และขว้างลูกไฟ ดรอปแกนถ่านเพลิง" },
-  { id: "arc:rift_stalker", name: "นักล่ารอยแยก", lore: "พบในรอยแยกมิติเท่านั้น วาร์ปไปด้านหลังเป้าหมายแล้วฟันด้วยใบมีด" },
+  { id: "arc:rift_stalker", name: "นักล่ารอยแยก", lore: "ออกล่าในที่มืดบนโลกปกติ วาร์ปไปด้านหลังเป้าหมายแล้วฟันด้วยใบมีด" },
   { id: "arc:void_crystal", name: "ผลึกโล่ความว่างเปล่า", lore: "ผลึกที่ไททันเรียกออกมาปกป้องตัวเอง ต้องทำลายทุกก้อนถึงจะทำร้ายไททันได้" },
   { id: "arc:ember_colossus", name: "ยักษ์เพลิงโคลอสซัส", lore: "บอส: ทุบพื้น ขว้างลูกไฟ ทำให้ลาวาปะทุใต้เท้า คลั่งเมื่อเลือดเหลือครึ่ง" },
   { id: "arc:void_titan", name: "ไททันแห่งความว่างเปล่า", lore: "บอสสุดท้าย 3 ระยะ: ลูกเวทติดตาม, โล่ผลึก, ลำแสงความว่างเปล่าและฝนอุกกาบาต" },
 ];
 
 // ---------- ภารกิจ ----------
-// type: cast / mine / learn / kill (target = entity id) / waystone / rift (target = tier) / bloodmoon / level / boss / spell (target = spell id)
+// type: cast / mine / learn / kill (target = entity id) / waystone / bloodmoon / level / boss / spell (target = spell id)
 export const QUESTS = [
   { id: "first_cast", name: "ก้าวแรกของจอมเวท", desc: "ร่ายเวท 10 ครั้ง", type: "cast", count: 10, xp: 100, items: [["arc:mana_potion", 3]] },
   { id: "miner", name: "นักขุดอาร์เคน", desc: "ขุดแร่อาร์เคน 10 ก้อน", type: "mine", count: 10, xp: 150, items: [["arc:arcane_ingot", 2]] },
@@ -115,11 +114,9 @@ export const QUESTS = [
   { id: "golem_hunt", name: "ทุบผลึก", desc: "กำจัดโกเลมผลึก 3 ตัว", type: "kill", target: "arc:crystal_golem", count: 3, xp: 300, items: [["arc:crystal_heart", 1]] },
   { id: "imp_hunt", name: "ดับไฟใต้พิภพ", desc: "กำจัดอิมพ์เพลิง 15 ตัว", type: "kill", target: "arc:ember_imp", count: 15, xp: 300, items: [["arc:rune_fire", 1]] },
   { id: "pathmaker", name: "ผู้สร้างเส้นทาง", desc: "วางหินวาร์ป 2 ก้อน", type: "waystone", count: 2, xp: 200, items: [["arc:arcane_shard", 12]] },
-  { id: "rift_1", name: "ผู้บุกเบิกรอยแยก", desc: "พิชิตรอยแยกมิติระดับ I", type: "rift", target: 1, count: 1, xp: 500, items: [["arc:rift_key", 1]] },
   { id: "blood_moon", name: "รอดใต้จันทร์สีเลือด", desc: "กำจัดมอนสเตอร์ 20 ตัวระหว่างจันทร์สีเลือด", type: "bloodmoon", count: 20, xp: 500, items: [["arc:rune_storm", 1]] },
   { id: "adept", name: "ผู้ชำนาญธาตุ", desc: "ขึ้นถึงเลเวล 15", type: "level", count: 15, xp: 400, items: [["arc:rune_frost", 1]] },
   { id: "colossus", name: "ล้มยักษ์เพลิง", desc: "ปราบยักษ์เพลิงโคลอสซัส", type: "boss", target: "arc:ember_colossus", count: 1, xp: 1000, items: [["arc:greater_mana_potion", 3]] },
-  { id: "rift_2", name: "ดำดิ่งสู่รอยแยก", desc: "พิชิตรอยแยกมิติระดับ II", type: "rift", target: 2, count: 1, xp: 800, items: [["arc:rift_key", 2]] },
   { id: "chronomancer", name: "ผู้หยุดกาลเวลา", desc: "เรียนคาถาหยุดเวลา", type: "spell", target: "time_stop", count: 1, xp: 600, items: [["arc:void_essence", 10]] },
   { id: "titan", name: "ผู้พิชิตความว่างเปล่า", desc: "ปราบไททันแห่งความว่างเปล่า", type: "boss", target: "arc:void_titan", count: 1, xp: 3000, items: [["arc:titan_heart", 1]] },
   { id: "archmage", name: "อาร์คเมจ", desc: "ขึ้นถึงเลเวล 40", type: "level", count: 40, xp: 2000, items: [["arc:greater_mana_potion", 5]] },
@@ -148,47 +145,12 @@ export const ALTAR_RECIPES = [
   { result: "arc:greater_mana_potion", count: 2, level: 8, needs: [["arc:mana_potion", 2], ["arc:void_essence", 1]] },
   { result: "arc:ember_sigil", level: 15, needs: [["arc:ember_core", 8], ["minecraft:blaze_rod", 2], ["arc:arcane_ingot", 2]] },
   { result: "arc:void_sigil", level: 25, needs: [["arc:void_essence", 12], ["arc:crystal_heart", 2], ["arc:arcane_ingot", 4]] },
-  { result: "arc:rift_key", count: 2, level: 5, needs: [["arc:void_essence", 2], ["arc:arcane_ingot", 1], ["minecraft:ender_pearl", 1]] },
 ];
 
 // ---------- ชุดเกราะ ----------
 export const ARMOR_SETS = {
   archmage: { name: "ชุดอาร์คเมจ", prefix: "arc:archmage_", manaPerPiece: 15, powerPerPiece: 0.05, full: "มานาฟื้นเร็วขึ้น 75%, ใช้มานาน้อยลง 15%" },
   voidplate: { name: "ชุดเกราะความว่างเปล่า", prefix: "arc:voidplate_", reducePerPiece: 0.05, full: "ต้านทาน I ตลอดเวลา, ไม่รับดาเมจตก, เคลื่อนย้ายพริบตาไม่ใช้มานา" },
-};
-
-// ---------- รอยแยกมิติ ----------
-export const RIFT_TIERS = {
-  1: {
-    name: "I", level: 1, requires: 0, color: "§d",
-    mobs: ["minecraft:zombie", "minecraft:skeleton", "minecraft:spider", "arc:rift_stalker", "arc:void_wraith"],
-    perRoom: 3, waves: 1, effects: [],
-    boss: "arc:crystal_golem", eliteBoss: true,
-  },
-  2: {
-    name: "II", level: 12, requires: 1, color: "§6",
-    mobs: ["arc:rift_stalker", "arc:ember_imp", "minecraft:blaze", "minecraft:wither_skeleton", "arc:void_wraith", "minecraft:husk"],
-    perRoom: 4, waves: 2, effects: [["strength", 0], ["resistance", 0]],
-    boss: "arc:ember_colossus",
-  },
-  3: {
-    name: "III", level: 25, requires: 2, color: "§5",
-    mobs: ["arc:rift_stalker", "arc:void_wraith", "arc:crystal_golem", "minecraft:enderman", "minecraft:wither_skeleton", "minecraft:evocation_illager"],
-    perRoom: 5, waves: 2, effects: [["strength", 1], ["resistance", 0], ["speed", 0]],
-    boss: "arc:void_titan",
-  },
-};
-export const RIFT_COLLAPSE_SECONDS = 120; // หลังพิชิตบอส รอยแยกจะพังลงภายในกี่วินาที
-export const RIFT_ABANDON_SECONDS = 180; // ไม่มีใครอยู่ในรอยแยกนานเท่านี้ -> พังทลาย
-
-// รางวัลหีบสมบัติในรอยแยก [itemId, min, max, weight]
-export const RIFT_LOOT = {
-  1: [["arc:arcane_shard", 4, 10, 30], ["arc:mana_potion", 1, 3, 20], ["minecraft:iron_ingot", 3, 8, 20], ["minecraft:gold_ingot", 2, 6, 15],
-    ["arc:void_essence", 1, 3, 15], ["minecraft:diamond", 1, 2, 8], ["arc:arcane_ingot", 1, 2, 10], ["minecraft:ender_pearl", 1, 3, 10]],
-  2: [["arc:arcane_ingot", 2, 5, 25], ["arc:void_essence", 2, 5, 20], ["arc:ember_core", 2, 5, 20], ["arc:greater_mana_potion", 1, 2, 15],
-    ["minecraft:diamond", 2, 4, 15], ["arc:crystal_heart", 1, 1, 8], ["arc:rift_key", 1, 1, 8], ["minecraft:emerald", 4, 10, 10]],
-  3: [["arc:arcane_ingot", 4, 8, 25], ["arc:void_essence", 4, 10, 20], ["arc:crystal_heart", 1, 2, 15], ["arc:greater_mana_potion", 2, 4, 15],
-    ["minecraft:diamond", 3, 6, 15], ["minecraft:netherite_scrap", 1, 3, 10], ["arc:rift_key", 1, 2, 10], ["minecraft:totem_of_undying", 1, 1, 4]],
 };
 
 // ---------- จันทร์สีเลือด ----------
@@ -215,7 +177,7 @@ export const DAMAGE_TEXT_MAX = 40;
 export const PROJECTILE_MAX = 80;
 
 export const DEFAULT_SETTINGS = { hud: true, glyph: true, dmg: true, cine: true, shake: true };
-export const DEFAULT_WORLD = { bloodMoon: true, pvp: false, realLightning: false, riftSky: false };
+export const DEFAULT_WORLD = { bloodMoon: true, pvp: false, realLightning: false };
 
 // ไอคอนฟอนต์ (RP/font/glyph_E5.png)
 export const G = {

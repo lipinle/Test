@@ -146,12 +146,11 @@ function ownerOf(entity) {
   return tamer ?? undefined;
 }
 
-function awardKill(player, dead, typeId, isMonster, inRift) {
+function awardKill(player, dead, typeId, isMonster) {
   const d = getData(player);
   let xp = KILL_XP[typeId] ?? (isMonster ? MONSTER_XP : OTHER_XP);
   const bm = bloodMoonActive();
   if (bm && isMonster) xp *= 2;
-  if (inRift) xp *= 1.5;
   addXp(player, xp);
   if (typeId.startsWith("arc:")) d.kills[typeId] = (d.kills[typeId] ?? 0) + 1;
   questProgress(player, "kill", typeId);
@@ -167,14 +166,12 @@ export function initProgression() {
     const dead = ev.deadEntity;
     let typeId;
     let isMonster = false;
-    let inRift = false;
     let loc;
     let dim;
     try {
       typeId = dead.typeId;
       if (typeId === "minecraft:player") return;
       isMonster = dead.matches({ families: ["monster"] });
-      inRift = dead.hasTag("arc_rift");
       loc = dead.location;
       dim = dead.dimension;
     } catch {
@@ -184,13 +181,13 @@ export function initProgression() {
     if (isBoss) {
       // บอส: ทุกคนที่อยู่ใกล้ได้เครดิตเต็ม
       for (const p of playersNear(dim, loc, 64, true)) {
-        awardKill(p, dead, typeId, true, inRift);
+        awardKill(p, dead, typeId, true);
         questProgress(p, "boss", typeId);
       }
       return;
     }
     const killer = ownerOf(ev.damageSource.damagingEntity);
-    if (killer && alive(killer)) awardKill(killer, dead, typeId, isMonster, inRift);
+    if (killer && alive(killer)) awardKill(killer, dead, typeId, isMonster);
   });
 
   // ค่าสถานะ VIT / โบนัสชุดเกราะ / มานา

@@ -1,5 +1,4 @@
 import { world, system, EntityDamageCause } from "@minecraft/server";
-import { DIMENSION_ID } from "./config.js";
 import { launch } from "./projectiles.js";
 import { spellDamage, aoe } from "./combat.js";
 import { fx, COL, sound } from "./fx.js";
@@ -176,7 +175,7 @@ function tickMobs() {
 }
 
 function rescan() {
-  for (const dimId of ["overworld", "nether", "the_end", DIMENSION_ID]) {
+  for (const dimId of ["overworld", "nether", "the_end"]) {
     const dim = safe(() => world.getDimension(dimId));
     if (!dim) continue;
     for (const type of AI_TYPES) safe(() => dim.getEntities({ type }).forEach(track));

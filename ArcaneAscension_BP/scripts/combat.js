@@ -13,7 +13,7 @@ const armorCache = new Map(); // player.id -> { archmage, voidplate }
 const NEVER = new Set([
   "minecraft:item", "minecraft:xp_orb", "minecraft:armor_stand", "minecraft:painting", "minecraft:leash_knot",
   "minecraft:lightning_bolt", "minecraft:npc", "minecraft:agent", "minecraft:tripod_camera",
-  "arc:rift_portal", "arc:damage_text",
+  "arc:damage_text",
 ]);
 const FRIENDLY = new Set([
   "minecraft:villager", "minecraft:villager_v2", "minecraft:wandering_trader", "minecraft:iron_golem",

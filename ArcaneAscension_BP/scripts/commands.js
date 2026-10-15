@@ -3,7 +3,6 @@ import { getData, resetData } from "./data.js";
 import { maxMana, setLevel } from "./progression.js";
 import { openGrimoire, giveKit, maxOut } from "./ui.js";
 import { startBloodMoon, stopBloodMoon } from "./events.js";
-import { openRift, forceCollapseAll } from "./rifts.js";
 import { tell } from "./util.js";
 
 // คำสั่ง /arc:... (Custom Commands ของ Script API) + /scriptevent arc:<ชื่อ> สำหรับเวอร์ชันที่ไม่มี
@@ -30,8 +29,6 @@ export const ACTIONS = {
   max: (p) => maxOut(p),
   bloodmoon: (p, arg) => (arg === "off" ? stopBloodMoon() : startBloodMoon()),
   boss: (p, arg) => spawnAhead(p, arg === "void_titan" ? "arc:void_titan" : "arc:ember_colossus"),
-  rift: (p, arg) => openRift(p, Math.max(1, Math.min(3, Number(arg) || 1))),
-  riftclose: () => forceCollapseAll(),
   reset: (p) => resetData(p),
   setlevel: (p, arg) => setLevel(p, Number(arg) || 1),
 };
@@ -81,17 +78,6 @@ export function registerCommands(reg) {
       mandatoryParameters: [{ name: "arc:boss_type", type: CustomCommandParamType.Enum }],
     },
     (origin, v) => run("boss", v)(origin),
-  );
-  reg.registerCommand(
-    {
-      name: "arc:rift", description: "[OP] เปิดรอยแยกมิติทันที (ระดับ 1-3)", permissionLevel: CommandPermissionLevel.GameDirectors,
-      mandatoryParameters: [{ name: "tier", type: CustomCommandParamType.Integer }],
-    },
-    (origin, tier) => run("rift", tier)(origin),
-  );
-  reg.registerCommand(
-    { name: "arc:riftclose", description: "[OP] ปิดรอยแยกทั้งหมด", permissionLevel: CommandPermissionLevel.GameDirectors },
-    run("riftclose"),
   );
   reg.registerCommand(
     { name: "arc:reset", description: "[OP] รีเซ็ตข้อมูลเวทของตัวเอง", permissionLevel: CommandPermissionLevel.GameDirectors },

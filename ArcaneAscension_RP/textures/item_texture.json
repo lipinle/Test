@@ -26,9 +26,6 @@
     "arc_greater_mana_potion": {
       "textures": "textures/items/arc_greater_mana_potion"
     },
-    "arc_rift_key": {
-      "textures": "textures/items/arc_rift_key"
-    },
     "arc_ember_sigil": {
       "textures": "textures/items/arc_ember_sigil"
     },

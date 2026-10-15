@@ -3,7 +3,7 @@
 //  Script API: @minecraft/server 2.10.0, @minecraft/server-ui 2.2.0
 // =====================================================================
 import { world, system, EntitySwingSource, ScriptEventSource } from "@minecraft/server";
-import { DIMENSION_ID, STAFFS } from "./config.js";
+import { STAFFS } from "./config.js";
 import { getData, saveData, forget, startAutosave } from "./data.js";
 import { initCombat, spellDamage } from "./combat.js";
 import { initProjectiles, launch } from "./projectiles.js";
@@ -11,7 +11,6 @@ import { initProgression, setBloodMoonProbe, addMana } from "./progression.js";
 import { initSpells, tryCast } from "./spells.js";
 import { initMobs } from "./mobs.js";
 import { initBosses, summonWithSigil } from "./bosses.js";
-import { initRifts, setRiftDimension, useRiftKey } from "./rifts.js";
 import { initWaystones, waystoneComponent } from "./waystones.js";
 import { altarComponent } from "./altar.js";
 import { initEvents, bloodMoonActive } from "./events.js";
@@ -22,16 +21,8 @@ import { registerCommands, ACTIONS } from "./commands.js";
 import { fx, COL, sound, psound, forgetFog } from "./fx.js";
 import { V, alive, safe, tell, title, isOp, eyeOf, giveItem } from "./util.js";
 
-// ---------- ช่วงเริ่มต้น: มิติใหม่ + บล็อกคอมโพเนนต์ + คำสั่ง ----------
-let dimRegistered = false;
-
+// ---------- ช่วงเริ่มต้น: บล็อกคอมโพเนนต์ + คำสั่ง ----------
 system.beforeEvents.startup.subscribe((ev) => {
-  try {
-    ev.dimensionRegistry.registerCustomDimension(DIMENSION_ID);
-    dimRegistered = true;
-  } catch (err) {
-    console.warn(`[Arcane] custom dimension unavailable (rifts will spawn in the sky): ${err}`);
-  }
   try {
     ev.blockComponentRegistry.registerCustomComponent("arc:waystone_interact", waystoneComponent);
     ev.blockComponentRegistry.registerCustomComponent("arc:altar_interact", altarComponent);
@@ -84,9 +75,6 @@ function onItemUse(player, item) {
       if (player.isSneaking) oreSense(player);
       else openGrimoire(player);
       break;
-    case "arc:rift_key":
-      useRiftKey(player);
-      break;
     case "arc:ember_sigil":
     case "arc:void_sigil":
       summonWithSigil(player, item);
@@ -98,7 +86,7 @@ function onItemUse(player, item) {
 }
 
 // กดใช้ตอนเล็งบล็อก บางครั้งเกมไม่ส่ง itemUse -> ดักจาก playerInteractWithBlock ด้วย แล้วกันยิงซ้ำ
-const USABLE = new Set(["arc:grimoire", "arc:rift_key", "arc:ember_sigil", "arc:void_sigil", "arc:void_reaver"]);
+const USABLE = new Set(["arc:grimoire", "arc:ember_sigil", "arc:void_sigil", "arc:void_reaver"]);
 const INTERACTIVE = /chest|barrel|door|gate|button|lever|crafting|furnace|smoker|anvil|table|shulker|hopper|dispenser|dropper|bed|bell|lectern|loom|stonecutter|grindstone|cartography|smithing|brewing|beacon|enchanting|composter|cauldron|jukebox|noteblock|repeater|comparator|daylight|respawn_anchor|lodestone|campfire|sign|frame|cake|candle|beehive|bee_nest|decorated_pot|crafter|vault|trial_spawner|waystone|altar|bookshelf|flower_pot|command_block|structure|jigsaw/;
 const lastUse = new Map();
 
@@ -143,10 +131,6 @@ function onSpawn(player, initial) {
 
 // ---------- เริ่มทุกระบบเมื่อโลกโหลดเสร็จ ----------
 world.afterEvents.worldLoad.subscribe(() => {
-  if (dimRegistered) {
-    const dim = safe(() => world.getDimension(DIMENSION_ID), "get rift dimension");
-    if (dim) setRiftDimension(dim);
-  }
   setBloodMoonProbe(bloodMoonActive);
   initCombat();
   initProjectiles();
@@ -154,7 +138,6 @@ world.afterEvents.worldLoad.subscribe(() => {
   initSpells();
   initMobs();
   initBosses();
-  initRifts();
   initWaystones();
   initEvents();
   initHud();
@@ -192,11 +175,11 @@ world.afterEvents.worldLoad.subscribe(() => {
     if (p?.typeId !== "minecraft:player") return;
     const name = ev.id.slice(4);
     const action = ACTIONS[name];
-    if (!action) return tell(p, `§c[Arcane] ไม่รู้จักคำสั่ง ${name} §7(menu, stats, kit, max, bloodmoon, boss, rift, riftclose, reset, setlevel)`);
+    if (!action) return tell(p, `§c[Arcane] ไม่รู้จักคำสั่ง ${name} §7(menu, stats, kit, max, bloodmoon, boss, reset, setlevel)`);
     if (!["menu", "stats"].includes(name) && !isOp(p) && ev.sourceType !== ScriptEventSource.Server) return tell(p, "§cต้องเป็น OP");
     action(p, ev.message.trim());
   });
 
   for (const p of world.getAllPlayers()) onSpawn(p, true);
-  console.log(`[Arcane] Arcane Ascension loaded (rift dimension: ${dimRegistered ? DIMENSION_ID : "sky fallback"})`);
+  console.log(`[Arcane] Arcane Ascension loaded`);
 });

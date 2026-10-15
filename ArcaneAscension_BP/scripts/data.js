@@ -20,11 +20,8 @@ function defaults() {
     quests: {}, // id -> { p: progress, c: claimed }
     kills: {}, // typeId -> count
     ways: [], // waystone ids ที่ค้นพบ
-    rift: { clears: { 1: 0, 2: 0, 3: 0 }, best: {} },
     set: { ...DEFAULT_SETTINGS },
     st: { casts: 0, mana: 0, ore: 0, bm: 0 },
-    home: null, // จุดกลับจากรอยแยก { dim, x, y, z }
-    riftId: null, // รอยแยกที่กำลังเข้าร่วม
   };
 }
 

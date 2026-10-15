@@ -1,14 +1,13 @@
 import { system } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData, CustomForm, ObservableBoolean } from "@minecraft/server-ui";
 import {
-  SPELLS, SPELL_ORDER, ATTRS, ELEMENTS, QUESTS, BESTIARY, RIFT_TIERS, ARMOR_SETS, xpToNext, MAX_LEVEL,
+  SPELLS, SPELL_ORDER, ATTRS, ELEMENTS, QUESTS, BESTIARY, ARMOR_SETS, xpToNext, MAX_LEVEL,
 } from "./config.js";
 import { getData, saveData, markDirty, worldSettings, saveWorldSettings, resetData } from "./data.js";
 import { maxMana, manaRegen, questState, claimQuest, claimableCount, questProgress, setLevel } from "./progression.js";
 import { cdLeft, manaCost, cooldownTicks, spellPower, resetCooldowns } from "./spells.js";
 import { armorOf } from "./combat.js";
 import { openWaystoneMenu } from "./waystones.js";
-import { activeRiftOf, isInsideRift, enterRift, leaveRift, openRift, riftList, forceCollapseAll, riftDimension } from "./rifts.js";
 import { startBloodMoon, stopBloodMoon, bloodMoonActive } from "./events.js";
 import { fx, psound } from "./fx.js";
 import { countItem, consumeItem, giveItem, itemName, tell, isOp, isCreative, roman, fmt, fmt1, bar, getMainhand, actionbar, safe } from "./util.js";
@@ -52,7 +51,6 @@ export function openGrimoire(player) {
     ["§lช่องคาถาที่พกไว้", "menu_mana", () => loadoutMenu(player)],
     [`§lภารกิจ${claim ? ` §a(${claim})` : ""}`, "menu_quests", () => questsMenu(player)],
     ["§lเครือข่ายหินวาร์ป", "menu_waystones", () => openWaystoneMenu(player)],
-    ["§lรอยแยกมิติ", "menu_rift", () => riftMenu(player)],
     ["§lบันทึกสัตว์ประหลาด", "menu_bestiary", () => bestiaryMenu(player)],
     ["§lคู่มือ", "menu_back", () => guideMenu(player)],
     ["§lตั้งค่า", "menu_settings", () => settingsMenu(player)],
@@ -305,34 +303,6 @@ function questsMenu(player) {
   show(f, player, actions);
 }
 
-// ============================================================ รอยแยก
-function riftMenu(player) {
-  const d = getData(player);
-  const rt = activeRiftOf(player);
-  let body = "§7ใช้ §dกุญแจรอยแยกมิติ§7 เพื่อเปิดประตูสู่ดันเจี้ยนที่สุ่มสร้างใหม่ทุกครั้ง\n";
-  body += riftDimension() ? "§8(สร้างในมิติใหม่ The Rift)\n\n" : "§8(สร้างบนท้องฟ้าเหนือจุดที่เปิด)\n\n";
-  for (const t of [1, 2, 3]) {
-    const info = RIFT_TIERS[t];
-    const best = d.rift.best[t];
-    body += `${info.color}ระดับ ${info.name}§7: ผ่าน ${d.rift.clears[t] ?? 0} ครั้ง${best ? ` • เร็วสุด ${Math.floor(best / 60)}:${String(best % 60).padStart(2, "0")}` : ""} §8(Lv ${info.level}+)\n`;
-  }
-  if (rt) body += `\n§dรอยแยกของคุณ: ระดับ ${roman(rt.rec.tier)} • สถานะ ${rt.rec.state}`;
-  const f = new ActionFormData().title("§5§lรอยแยกมิติ").body(body);
-  const actions = [];
-  if (rt && !rt.collapsing) {
-    if (isInsideRift(player, rt)) {
-      f.button("§cออกจากรอยแยก\n§8กลับไปจุดที่เข้ามา", ICON("menu_rift"));
-      actions.push(() => leaveRift(player));
-    } else {
-      f.button("§aกลับเข้ารอยแยก", ICON("menu_rift"));
-      actions.push(() => enterRift(player, rt));
-    }
-  }
-  f.button("« กลับ", ICON("menu_back"));
-  actions.push(() => openGrimoire(player));
-  show(f, player, actions);
-}
-
 // ============================================================ สัตว์ประหลาด
 function bestiaryMenu(player) {
   const d = getData(player);
@@ -364,7 +334,6 @@ const GUIDE = [
   ["ค่าสถานะ", "§fได้ 3 แต้มทุกเลเวล ใช้ในเมนู สถานะ\n§dINT§f พลังเวท • §bWIS§f มานา • §cVIT§f หัวใจ • §eCEL§f ลดคูลดาวน์\n\nXP ได้จาก: ฆ่ามอนสเตอร์, ร่ายเวท, ขุดแร่อาร์เคน, ภารกิจ, รอยแยก, บอส"],
   ["แท่นบูชา & รูน", "§fคราฟ §5แท่นบูชาอาร์เคน§f แล้วแตะเพื่อหลอมรวม: คทาธาตุ, ชุดเกราะ, รูน, ตราอัญเชิญบอส\n\n§fถือดาบ/ขวาน/หอก/ตรีศูล แล้วแตะแท่นบูชา = §dโรงตีรูน§f ใส่รูนลงอาวุธ\n§8ดาบรูนใส่ได้ 3 ช่อง, ดาบพิฆาตมิติ 2 ช่อง, อาวุธอื่น 1 ช่อง"],
   ["หินวาร์ป", "§fวางหินวาร์ปแล้วตั้งชื่อ แตะหินวาร์ปเพื่อค้นพบ แตะอีกครั้งเพื่อเลือกที่วาร์ป (ข้ามมิติได้)\nใช้มานา 20 ต่อครั้ง\nหินวาร์ปที่รู้จักจะขึ้นบนแถบตำแหน่ง (Locator Bar) ด้วย"],
-  ["รอยแยกมิติ", "§fใช้กุญแจรอยแยก → เลือกระดับ → ประตูมิติจะเปิดตรงหน้า เพื่อนเดินเข้าประตูเดียวกันได้\nข้างในคือดันเจี้ยน 16 ห้องที่สุ่มใหม่ทุกครั้ง: ห้องต่อสู้ (ประตูจะผนึก), ห้องสมบัติ, แท่นฟื้นพลัง\nเคลียร์ห้องต่อสู้ทั้งหมด → ทางสู่ลานบอสเปิด → ชนะบอส → หีบรางวัล + ประตูทางออก\n§8ตายในรอยแยก? กลับเข้าไปได้จากเมนู รอยแยกมิติ\n§8ถ้าเห็น \"รอยแยกกำลังก่อตัว\" ให้รอสักครู่ ระบบจะตรึงคุณไว้จนพื้นสร้างเสร็จ ถ้ามิติใหม่ใช้ไม่ได้บนเครื่องนี้ จะคืนกุญแจและสร้างดันเจี้ยนบนท้องฟ้าแทน"],
   ["บอส", "§6ยักษ์เพลิงโคลอสซัส§f: ทุบพื้น, ฝนลูกไฟ, ลาวาปะทุใต้เท้า, คลั่งเมื่อเลือดครึ่ง\n§5ไททันแห่งความว่างเปล่า§f: 3 ระยะ — ลูกเวทติดตาม → โล่ผลึก 4 ก้อน (ทำลายให้หมด!) → ลำแสงความว่างเปล่าและฝนอุกกาบาต\nอัญเชิญได้ด้วยตรา หรือเจอเป็นบอสรอยแยกระดับ II/III"],
   ["จันทร์สีเลือด", "§fทุก 7 คืน (หรือสุ่ม) ท้องฟ้าจะแดงฉาน มอนสเตอร์เกิดเป็นฝูงรอบตัวและแข็งแกร่งขึ้น\nแต่ XP จากมอนสเตอร์ได้ 2 เท่า!\n§8ผู้ดูแลปิดได้ในเมนู ผู้ดูแล → ตั้งค่าโลก"],
 ];
@@ -448,7 +417,7 @@ export const TEST_KIT = [
   ["arc:archmage_hood", 1], ["arc:archmage_robe", 1], ["arc:archmage_leggings", 1], ["arc:archmage_boots", 1],
   ["arc:voidplate_helmet", 1], ["arc:voidplate_chestplate", 1], ["arc:voidplate_leggings", 1], ["arc:voidplate_boots", 1],
   ["arc:arcane_shard", 64], ["arc:arcane_ingot", 32], ["arc:void_essence", 32], ["arc:ember_core", 32], ["arc:crystal_heart", 8],
-  ["arc:titan_heart", 2], ["arc:mana_potion", 8], ["arc:greater_mana_potion", 8], ["arc:rift_key", 8], ["arc:ember_sigil", 2],
+  ["arc:titan_heart", 2], ["arc:mana_potion", 8], ["arc:greater_mana_potion", 8], ["arc:ember_sigil", 2],
   ["arc:void_sigil", 2], ["arc:rune_fire", 2], ["arc:rune_frost", 2], ["arc:rune_storm", 2], ["arc:rune_leech", 2],
   ["arc:waystone", 4], ["arc:arcane_altar", 1],
 ];
@@ -479,7 +448,7 @@ export function maxOut(player) {
 
 function adminMenu(player) {
   const ws = worldSettings();
-  const f = new ActionFormData().title("§c§lผู้ดูแล").body(`§7ตั้งค่าโลก: จันทร์สีเลือด ${ws.bloodMoon ? "§aเปิด" : "§cปิด"}§7 • PvP ${ws.pvp ? "§aเปิด" : "§cปิด"}§7 • สายฟ้าจริง ${ws.realLightning ? "§aเปิด" : "§cปิด"}\n§7รอยแยกที่เปิดอยู่: ${riftList().length}`);
+  const f = new ActionFormData().title("§c§lผู้ดูแล").body(`§7ตั้งค่าโลก: จันทร์สีเลือด ${ws.bloodMoon ? "§aเปิด" : "§cปิด"}§7 • PvP ${ws.pvp ? "§aเปิด" : "§cปิด"}§7 • สายฟ้าจริง ${ws.realLightning ? "§aเปิด" : "§cปิด"}`);
   /** @type {[string, () => void][]} */
   const actions = [
     ["รับชุดทดสอบ (ไอเท็มครบทุกชิ้น)", () => giveKit(player)],
@@ -487,10 +456,6 @@ function adminMenu(player) {
     [bloodMoonActive() ? "หยุดจันทร์สีเลือด" : "เริ่มจันทร์สีเลือดทันที", () => (bloodMoonActive() ? stopBloodMoon() : startBloodMoon())],
     ["อัญเชิญยักษ์เพลิงตรงหน้า", () => spawnAhead(player, "arc:ember_colossus")],
     ["อัญเชิญไททันตรงหน้า", () => spawnAhead(player, "arc:void_titan")],
-    ["เปิดรอยแยกระดับ I", () => openRift(player, 1)],
-    ["เปิดรอยแยกระดับ II", () => openRift(player, 2)],
-    ["เปิดรอยแยกระดับ III", () => openRift(player, 3)],
-    ["ปิดรอยแยกทั้งหมด", () => forceCollapseAll()],
     ["ตั้งค่าโลก", () => worldSettingsMenu(player)],
     ["§cรีเซ็ตข้อมูลตัวเอง", () => resetData(player)],
     ["« กลับ", () => openGrimoire(player)],
@@ -506,7 +471,6 @@ function worldSettingsMenu(player) {
     .toggle("จันทร์สีเลือด", { defaultValue: ws.bloodMoon })
     .toggle("คาถาโดนผู้เล่นอื่น (PvP)", { defaultValue: ws.pvp })
     .toggle("พายุคลั่งเรียกสายฟ้าจริง (จุดไฟได้)", { defaultValue: ws.realLightning })
-    .toggle("สร้างดันเจี้ยนบนท้องฟ้าแทนมิติใหม่", { defaultValue: ws.riftSky, tooltip: "เปิดอัตโนมัติถ้ามิติใหม่ใช้ไม่ได้บนอุปกรณ์นี้" })
     .submitButton("บันทึก")
     .show(player)
     .then((res) => {
@@ -514,7 +478,6 @@ function worldSettingsMenu(player) {
       ws.bloodMoon = !!res.formValues[0];
       ws.pvp = !!res.formValues[1];
       ws.realLightning = !!res.formValues[2];
-      ws.riftSky = !!res.formValues[3];
       saveWorldSettings(ws);
       if (!ws.bloodMoon && bloodMoonActive()) stopBloodMoon();
       tell(player, "§a✔ บันทึกการตั้งค่าโลกแล้ว");

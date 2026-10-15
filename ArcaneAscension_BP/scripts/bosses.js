@@ -194,7 +194,6 @@ function summonMinions(st, type, n) {
     const loc = onCircle(e.location, 3.5, (i / n) * Math.PI * 2 + rand(0, 1), 0.2);
     try {
       const m = e.dimension.spawnEntity(type, loc);
-      if (e.hasTag("arc_rift")) for (const tag of e.getTags()) if (tag.startsWith("arc_rift")) m.addTag(tag);
       fx.smoke(e.dimension, V.up(loc, 1), { red: 0.2, green: 0.1, blue: 0.3 }, 0.6, 10, 0.8);
     } catch {}
   }
@@ -267,7 +266,6 @@ function enterShield(st, tick) {
     const loc = { x: p.x, y: groundY(e.dimension, { x: p.x, y: st.home.y + 6, z: p.z }, 20), z: p.z };
     try {
       const c = e.dimension.spawnEntity("arc:void_crystal", loc);
-      for (const tag of e.getTags()) if (tag.startsWith("arc_rift")) c.addTag(tag);
       st.crystals.push(c);
       fx.rise(e.dimension, loc, COL.void, 1, 20, 3);
     } catch {}
